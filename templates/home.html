@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>StockSense AI</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+body {
+    font-family: 'Poppins', sans-serif;
+    background: url('https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3') no-repeat center center fixed;
+    background-size: cover;
+}
+.glass {
+    backdrop-filter: blur(12px);
+    background: rgba(255,255,255,0.85);
+}
+</style>
+
+</head>
+
+<body class="text-gray-800">
+
+<!-- HEADER -->
+<header class="flex justify-between items-center px-8 py-4 glass sticky top-0 z-50">
+    <h1 class="text-2xl font-bold text-yellow-500">StockSense AI</h1>
+    <nav class="space-x-6 hidden md:block">
+        <a href="#features" class="hover:text-yellow-500">Features</a>
+        <a href="#testimonials" class="hover:text-yellow-500">Testimonials</a>
+        <a href="#faq" class="hover:text-yellow-500">FAQ</a>
+    </nav>
+</header>
+
+<!-- HERO -->
+<section class="grid md:grid-cols-2 items-center gap-12 px-6 md:px-16 py-24">
+
+<!-- LEFT CONTENT -->
+<div data-aos="fade-right" class="space-y-6 max-w-xl">
+    
+    <h2 class="text-4xl md:text-5xl font-bold text-yellow-400 leading-tight">
+        Smarter Stock Decisions <br/> 
+        Made Simple
+    </h2>
+
+    
+
+    <div class="pt-4">
+        <a href="/prediction"
+           class="inline-block bg-yellow-400 px-8 py-4 rounded-xl text-lg font-semibold hover:bg-yellow-500 shadow-lg transform hover:scale-105 transition">
+            🚀 Try Prediction
+        </a>
+    </div>
+
+</div>
+
+<!-- RIGHT IMAGE -->
+<div class="relative flex justify-center md:justify-end">
+    
+    <img id="heroImage"
+         class="rounded-2xl shadow-2xl w-full max-w-lg md:max-w-xl lg:max-w-2xl transition duration-500">
+
+    <div class="absolute inset-0 bg-yellow-200 opacity-10 blur-2xl rounded-2xl"></div>
+
+</div>
+
+</section>
+
+<!-- FEATURES -->
+<section id="features" class="py-20 px-8 glass">
+<h3 class="text-3xl font-bold text-center mb-12">Why You'll Love It</h3>
+
+<div class="grid md:grid-cols-3 gap-10">
+
+<div data-aos="zoom-in" class="p-8 shadow-lg rounded-2xl text-center bg-white">
+    <h4 class="text-xl font-semibold mb-3">📊 Easy to Understand</h4>
+    <p>No confusing charts. We explain stock movements in simple words anyone can understand.</p>
+</div>
+
+<div data-aos="zoom-in" data-aos-delay="100" class="p-8 shadow-lg rounded-2xl text-center bg-white">
+    <h4 class="text-xl font-semibold mb-3">🎯 Clear Buy/Sell Signals</h4>
+    <p>Know whether a stock looks good to buy, sell, or hold — instantly.</p>
+</div>
+
+<div data-aos="zoom-in" data-aos-delay="200" class="p-8 shadow-lg rounded-2xl text-center bg-white">
+    <h4 class="text-xl font-semibold mb-3">⚡ Fast Results</h4>
+    <p>Get insights in seconds without waiting or complicated setup.</p>
+</div>
+
+</div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section id="testimonials" class="py-20 px-8">
+<h3 class="text-3xl font-bold text-center mb-12 text-white">What People Are Saying</h3>
+
+<div class="grid md:grid-cols-3 gap-8">
+
+<div class="p-6 bg-white shadow-xl rounded-2xl">
+<p>"I used to get confused by stock charts. Now I just check this and understand instantly."</p>
+<span class="block mt-4 font-semibold">— Rahul Sharma</span>
+</div>
+
+<div class="p-6 bg-white shadow-xl rounded-2xl">
+<p>"Super clean and simple. It feels like having a personal stock advisor."</p>
+<span class="block mt-4 font-semibold">— Ananya Verma</span>
+</div>
+
+<div class="p-6 bg-white shadow-xl rounded-2xl">
+<p>"Perfect for beginners like me. I finally feel confident investing."</p>
+<span class="block mt-4 font-semibold">— Karan Mehta</span>
+</div>
+
+</div>
+</section>
+
+<!-- FAQ -->
+
+<section id="faq" class="py-20 px-8 glass">
+<h3 class="text-3xl font-bold text-center mb-12">Frequently Asked Questions</h3>
+
+<div class="max-w-3xl mx-auto space-y-6">
+
+<details class="group p-5 rounded-xl bg-white transition duration-300 hover:-translate-y-1 hover:shadow-2xl hover:border-yellow-400 border border-transparent">
+    
+    <summary class="font-semibold cursor-pointer flex justify-between items-center">
+        Can I trust the predictions?
+        <span class="transition-transform duration-300 group-open:rotate-180">⌄</span>
+    </summary>
+
+    <p class="mt-3 text-gray-600">
+        We analyze past stock behavior to give smart suggestions, but markets can change anytime. Always use your judgment.
+    </p>
+</details>
+
+<details class="group p-5 rounded-xl bg-white transition duration-300 hover:-translate-y-1 hover:shadow-2xl hover:border-yellow-400 border border-transparent">
+    
+    <summary class="font-semibold cursor-pointer flex justify-between items-center">
+        Is this beginner friendly?
+        <span class="transition-transform duration-300 group-open:rotate-180">⌄</span>
+    </summary>
+
+    <p class="mt-3 text-gray-600">
+        Yes! You don’t need any prior knowledge. Everything is explained in simple language.
+    </p>
+</details>
+
+<details class="group p-5 rounded-xl bg-white transition duration-300 hover:-translate-y-1 hover:shadow-2xl hover:border-yellow-400 border border-transparent">
+    
+    <summary class="font-semibold cursor-pointer flex justify-between items-center">
+        Do I need to pay?
+        <span class="transition-transform duration-300 group-open:rotate-180">⌄</span>
+    </summary>
+
+    <p class="mt-3 text-gray-600">
+        No. You can use the basic features completely free.
+    </p>
+</details>
+
+<details class="group p-5 rounded-xl bg-white transition duration-300 hover:-translate-y-1 hover:shadow-2xl hover:border-yellow-400 border border-transparent">
+    
+    <summary class="font-semibold cursor-pointer flex justify-between items-center">
+        How fast are results?
+        <span class="transition-transform duration-300 group-open:rotate-180">⌄</span>
+    </summary>
+
+    <p class="mt-3 text-gray-600">
+        You’ll get results within seconds after entering a stock.
+    </p>
+</details>
+
+</div>
+</section>
+
+<!-- FOOTER -->
+<footer class="bg-gray-900 text-white py-10 px-8">
+<div class="grid md:grid-cols-3 gap-8 text-center md:text-left">
+
+<div>
+<h4 class="text-xl font-semibold mb-2">StockSense AI</h4>
+<p class="text-gray-400">Smart investing made simple.</p>
+</div>
+
+<div>
+<h4 class="text-lg font-semibold mb-2">Links</h4>
+<ul class="space-y-1 text-gray-400">
+<li><a href="#" class="hover:text-yellow-400">Home</a></li>
+<li><a href="#features" class="hover:text-yellow-400">Features</a></li>
+<li><a href="#faq" class="hover:text-yellow-400">FAQ</a></li>
+</ul>
+</div>
+
+<div>
+<h4 class="text-lg font-semibold mb-2">Contact</h4>
+<p class="text-gray-400">support@stocksense.ai</p>
+</div>
+
+</div>
+
+<p class="text-center text-gray-500 mt-8">© 2026 StockSense AI</p>
+</footer>
+
+<!-- SCRIPTS -->
+<script>
+AOS.init();
+
+// Hero images (random on reload)
+const images = [
+    "{{ url_for('static', filename='hero.png') }}",
+];
+
+const randomImage = images[Math.floor(Math.random() * images.length)];
+document.getElementById("heroImage").src = randomImage;
+</script>
+</script>
+
+</body>
+</html>
