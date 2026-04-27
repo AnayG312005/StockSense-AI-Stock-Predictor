@@ -342,7 +342,10 @@ While it is not a substitute for professional financial advice, it serves as a s
 
 ---
 ## 16. Output
-![Uploading Screenshot (1032).png…]()
+<img width="1338" height="544" alt="Screenshot (1032)" src="https://github.com/user-attachments/assets/a85bc130-b89d-49f9-abb1-2e19a87b93bb" />
+
+
+
 
 
 
