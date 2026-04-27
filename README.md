@@ -313,8 +313,3 @@ While it is not a substitute for professional financial advice, it serves as a s
 
 ---
 
-If you want, I can also:
-
-* Add **badges (GitHub, license, stars)**
-* Create a **cool GitHub banner**
-* Or tailor it specifically to your exact code features (like your AI recommendation logic)
