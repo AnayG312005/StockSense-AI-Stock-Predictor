@@ -277,24 +277,50 @@ http://127.0.0.1:5000/
 
 ## 13. Project Structure
 
-```
 stock-sense-ai/
 │
-├── static/
-├── templates/
-│   ├── index.html
-│   ├── prediction.html
+├── app/                      # Main application package
+│   ├── __init__.py
+│   ├── routes.py            # Flask routes
+│   ├── services/            # Business logic
+│   │   ├── prediction.py
+│   │   ├── data_fetcher.py
+│   │   └── recommendation.py
+│   │
+│   ├── templates/           # HTML files
+│   │   ├── index.html
+│   │   ├── prediction.html
+│   │
+│   ├── static/              # CSS, JS, images
+│   │   ├── css/
+│   │   ├── js/
+│   │   ├── images/
 │
-├── model/
-│   ├── model.pkl
+├── models/                  # ML models
+│   ├── stock_model.pkl
 │   ├── scaler.pkl
 │
-├── app.py
+├── data/                    # Dataset storage
+│   ├── stock_market.csv
+│
+├── notebooks/               # Jupyter notebooks
+│   ├── stock_price_prediction.ipynb
+│
+├── config/                  # Config files
+│   ├── config.py
+│
+├── scripts/                 # Utility scripts
+│   ├── train_model.py
+│   ├── preprocess.py
+│
+├── tests/                   # (Optional) Testing
+│
+├── .env                     # Environment variables
+├── .gitignore
 ├── requirements.txt
-└── README.md
-```
-
----
+├── run.py                   # Entry point
+├── README.md
+└── LICENSE
 
 ## 14. Use Cases
 
