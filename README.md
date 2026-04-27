@@ -1,7 +1,3 @@
-Here’s a clean, professional **README.md** for your project **Stock Sense AI**, inspired by the structure you provided but tailored to stock prediction:
-
----
-
 # 📈 Stock Sense AI – Intelligent Stock Prediction System
 
 ## 1. Introduction
@@ -235,8 +231,8 @@ Metrics:
 ### Step 1: Clone Repository
 
 ```bash
-git clone https://github.com/your-username/stock-sense-ai.git
-cd stock-sense-ai
+git clone[https://github.com/AnayG312005/StockSense-AI-Stock-Predictor.git]
+cd Stock_Price_prediction
 ```
 
 ### Step 2: Create Virtual Environment
