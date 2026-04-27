@@ -341,6 +341,9 @@ Stock Sense AI is a powerful and practical application that bridges the gap betw
 While it is not a substitute for professional financial advice, it serves as a strong analytical tool for gaining insights into stock behavior. With future improvements, Stock Sense AI has the potential to evolve into a complete AI-driven trading assistant.
 
 ---
-##16. Output
+## 16. Output
+![Uploading Screenshot (1032).png…]()
 
-C:\Users\hp\OneDrive\Pictures\Screenshots\Screenshot (1032).png
+
+
+
