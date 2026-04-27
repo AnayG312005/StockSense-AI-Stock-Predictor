@@ -5,11 +5,7 @@ venv/
 env/
 .venv/
 
-# -----------------------------
-# Environment Variables (Secrets)
-# -----------------------------
-.env
-*.env
+
 
 # -----------------------------
 # Python Cache / Compiled Files
