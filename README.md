@@ -277,11 +277,7 @@ http://127.0.0.1:5000/
 
 ## 13. Project Structure
 
-Your current structure works, but it’s a bit messy for scaling (mix of notebooks, models, raw files in root). If you want a **clean, professional, production-ready structure** for **Stock Sense AI**, here’s a much better version 👇
-
----
-
-# 📁 Recommended Folder Structure (Clean + Scalable)
+# 📁 Recommended Folder Structure 
 
 ```
 stock-sense-ai/
@@ -332,116 +328,6 @@ stock-sense-ai/
 
 ---
 
-# 🔥 What You Should Move (Important)
-
-From your current setup:
-
-### Move these 👇
-
-* `templates/` → `app/templates/`
-* `static/` → `app/static/`
-* `stock_market.csv` → `data/`
-* `Stock_Price_Prediction.ipynb` → `notebooks/`
-* `stock_price_prediction.keras` → `models/`
-* model files (`.pkl`) → `models/`
-
----
-
-# 🧠 Why This Structure is Better
-
-* ✔ Separates frontend, backend, and ML logic
-* ✔ Easy to scale (add APIs, features)
-* ✔ Clean for GitHub / recruiters
-* ✔ Industry-style Flask structure
-* ✔ Easier debugging & maintenance
-
----
-
-# 🚀 Minimal Working Entry File
-
-### `run.py`
-
-```python
-from app import create_app
-
-app = create_app()
-
-if __name__ == "__main__":
-    app.run(debug=True)
-```
-
----
-
-# ⚙️ Example `__init__.py`
-
-```python
-from flask import Flask
-
-def create_app():
-    app = Flask(__name__)
-
-    from .routes import main
-    app.register_blueprint(main)
-
-    return app
-```
-
----
-
-# 🧩 Example `routes.py`
-
-```python
-from flask import Blueprint, render_template, request
-
-main = Blueprint('main', __name__)
-
-@main.route('/')
-def home():
-    return render_template('index.html')
-
-@main.route('/prediction', methods=['POST'])
-def prediction():
-    stock = request.form.get('stock')
-    # call prediction logic here
-    return render_template('prediction.html', result="Sample Output")
-```
-
----
-
-# ⚠️ One Important Fix for You
-
-Right now you have:
-
-```
-app.py (everything inside)
-```
-
-👉 That’s fine for small projects, but for your level (ML + UI + AI),
-**you MUST modularize** like above — otherwise it becomes messy fast.
-
----
-
-# 💡 Pro Tip (GitHub Ready)
-
-Add this to your `.gitignore`:
-
-```
-venv/
-__pycache__/
-*.pyc
-.env
-.ipynb_checkpoints/
-```
-
----
-
-If you want next step, I can:
-
-* 🔧 Refactor your **current app.py into this structure**
-* 🎯 Connect your **AI recommendation logic properly**
-* 🎨 Upgrade UI structure for cleaner integration
-
-Just tell me 👍
 
 ## 14. Use Cases
 
