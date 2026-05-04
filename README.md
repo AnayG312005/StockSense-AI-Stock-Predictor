@@ -344,6 +344,13 @@ While it is not a substitute for professional financial advice, it serves as a s
 ## 16. Output
 <img width="1338" height="544" alt="Screenshot (1032)" src="https://github.com/user-attachments/assets/a85bc130-b89d-49f9-abb1-2e19a87b93bb" />
 
+<img width="1338" height="629" alt="eb69ab7a-cd53-4998-826c-b49cd96e70b8" src="https://github.com/user-attachments/assets/181c1655-073c-4a85-a57b-1243c00ca55f" />
+
+<img width="1280" height="607" alt="6c61367f-a936-4abe-a3d6-3a98e0ce70c3" src="https://github.com/user-attachments/assets/3dfb0ccd-5394-435c-825a-8d61bb3d61e8" />
+
+<img width="1280" height="591" alt="7a5144d5-2cb1-4010-85df-cfa3695e3e0d" src="https://github.com/user-attachments/assets/76afd517-47a9-4ca4-920d-ef5c3a5a2bb6" />
+
+
 
 
 
