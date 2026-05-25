@@ -1,0 +1,154 @@
+# Power BI Dashboard Design Prompt for “Stock Sense AI”
+
+Design a highly professional, modern, AI-powered financial analytics dashboard for a web application called **Stock Sense AI** using **Power BI-inspired UI/UX**, advanced data visualization principles, fintech aesthetics, and interactive analytics components. The dashboard should look like a premium stock market intelligence platform similar to Bloomberg Terminal, TradingView, Groww, Zerodha, or Yahoo Finance, while maintaining a clean and futuristic AI-driven appearance.
+
+The dashboard must focus on **AI-powered stock prediction, real-time analytics, intelligent recommendations, and financial insights**. Use a dark professional theme with glassmorphism, gradient highlights, glowing charts, smooth transitions, and modern fintech visual elements. The interface should feel enterprise-grade, data-rich, and visually engaging.
+
+The homepage dashboard should contain a top navigation bar with:
+
+* Platform logo: “Stock Sense AI”
+* Search bar for stock symbols (AAPL, TSLA, INFY, TCS, etc.)
+* User profile section
+* Notifications icon
+* Market status indicator (Open/Closed)
+
+Create a left sidebar navigation with:
+
+* Dashboard
+* Market Overview
+* AI Predictions
+* Technical Analysis
+* Portfolio
+* Watchlist
+* News & Insights
+* Settings
+
+The main dashboard should include advanced Power BI-style visualization sections:
+
+### 1. Market Overview Section
+
+Display:
+
+* Major stock indices cards (NASDAQ, SENSEX, NIFTY, Dow Jones)
+* Live market trends
+* Percentage gain/loss indicators
+* Mini sparkline charts
+* Green/red dynamic indicators for bullish and bearish movement
+
+### 2. AI Prediction Analytics Panel
+
+Design an AI prediction engine section containing:
+
+* Predicted stock price chart
+* Historical vs predicted comparison graph
+* Confidence score meter
+* Trend probability indicator
+* AI recommendation badges:
+
+  * 🟢 BUY
+  * 🔴 SELL
+  * 🟡 HOLD
+* Forecast timeline visualization
+* Accuracy percentage gauge
+
+Use interactive line charts, candlestick charts, area charts, and predictive overlays.
+
+### 3. Technical Analysis Dashboard
+
+Include:
+
+* RSI Indicator
+* MACD Chart
+* Bollinger Bands
+* Moving Averages (50 DMA / 200 DMA)
+* Volume analysis graph
+* Volatility heatmap
+* Momentum indicators
+
+All charts should support hover tooltips, zooming, filtering, and dynamic interaction like professional Power BI dashboards.
+
+### 4. Portfolio Analytics Section
+
+Design a visually rich portfolio overview with:
+
+* Investment distribution pie chart
+* Profit/Loss analytics
+* Asset allocation treemap
+* Daily performance trend graph
+* Top gainers and losers table
+* Portfolio growth comparison
+
+### 5. Real-Time Insights & AI Recommendations
+
+Add AI-generated financial insight cards showing:
+
+* Market sentiment
+* Risk level analysis
+* Suggested entry/exit points
+* Short-term vs long-term recommendation
+* AI confidence explanation
+
+### 6. Data Visualization Requirements
+
+Use professional visual components such as:
+
+* Candlestick charts
+* Heatmaps
+* KPI cards
+* Donut charts
+* Line graphs
+* Area charts
+* Scatter plots
+* Financial gauges
+* Animated counters
+
+The dashboard should support:
+
+* Real-time data updates
+* Responsive layouts
+* Interactive filters
+* Date range selection
+* Stock comparison tools
+
+### 7. UI/UX Styling Guidelines
+
+The design should use:
+
+* Dark theme with neon blue, cyan, purple, and green highlights
+* Glassmorphism cards
+* Soft shadows and gradient borders
+* Smooth animations and transitions
+* Rounded modern widgets
+* Professional typography
+* AI-themed futuristic visuals
+
+### 8. Additional AI Features
+
+Include conceptual widgets for:
+
+* News sentiment analysis
+* AI chatbot assistant
+* Risk prediction engine
+* Smart alerts system
+* Market anomaly detection
+* Predictive investment opportunities
+
+### 9. Dashboard Objective
+
+The final dashboard must communicate:
+
+* Intelligent stock forecasting
+* AI-driven financial decision making
+* Real-time stock intelligence
+* Professional fintech analytics
+* Enterprise-grade data visualization
+
+The output should resemble a complete production-ready fintech analytics dashboard suitable for:
+
+* Investors
+* Traders
+* Financial analysts
+* Students learning finance and machine learning
+* AI-powered trading platforms
+
+Ensure the dashboard feels premium, highly interactive, data-centric, and visually comparable to professional Power BI financial analytics solutions with advanced charting, insightful KPIs, and AI-enhanced stock prediction workflows.
