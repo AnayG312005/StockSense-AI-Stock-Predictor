@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "ZlGxOLRn_cBJI01QRH2-Z"
+uri = "file://screenshots/stocksense-dashboard.jpg"
+type = "image"
+title = "StockSense AI — Premium Dashboard"
