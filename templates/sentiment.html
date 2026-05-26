@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StockSense AI — Market Psychology Dashboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --cyan:#00d4ff; --purple:#7c3aed; --green:#10b981; --red:#ef4444; --yellow:#f59e0b; --bg:#050b14; --card:rgba(255,255,255,0.03); --border:rgba(0,212,255,0.12); }
+  * { box-sizing: border-box; margin:0; padding:0; }
+  html { scroll-behavior:smooth; }
+  body { font-family:'Space Grotesk',sans-serif; background:var(--bg); color:#e2e8f0; overflow-x:hidden; }
+  .bg-mesh { position:fixed; inset:0; z-index:0; pointer-events:none;
+    background: radial-gradient(ellipse 80% 60% at 20% 20%,rgba(0,212,255,0.05) 0%,transparent 60%),
+                radial-gradient(ellipse 60% 80% at 80% 80%,rgba(124,58,237,0.06) 0%,transparent 60%);
+    animation: meshMove 12s ease-in-out infinite alternate; }
+  @keyframes meshMove { 0%{transform:scale(1) translate(0,0)} 100%{transform:scale(1.05) translate(-10px,-10px)} }
+  .dot-grid { background-image:radial-gradient(rgba(0,212,255,0.07) 1px,transparent 1px); background-size:30px 30px; }
+  .glass { background:var(--card); border:1px solid var(--border); backdrop-filter:blur(16px); }
+  .glass-strong { background:rgba(255,255,255,0.05); border:1px solid rgba(0,212,255,0.2); backdrop-filter:blur(24px); }
+  .gradient-text { background:linear-gradient(135deg,#00d4ff,#7c3aed 50%,#10b981); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+  .text-cyan { color:var(--cyan); }
+  .glow-cyan { box-shadow:0 0 30px rgba(0,212,255,0.12); }
+  .btn-primary { background:linear-gradient(135deg,#00d4ff,#7c3aed); color:white; border:none; cursor:pointer; transition:all 0.3s; }
+  .btn-primary:hover { transform:translateY(-2px); box-shadow:0 8px 30px rgba(0,212,255,0.35); }
+  .card-hover { transition:all 0.3s; }
+  .card-hover:hover { transform:translateY(-3px); border-color:rgba(0,212,255,0.3) !important; }
+
+  /* Gauge CSS */
+  .gauge-wrap { position:relative; width:180px; height:90px; overflow:hidden; margin:0 auto; }
+  .gauge-bg { width:180px; height:180px; border-radius:50%; position:absolute; top:0; left:0; }
+  .gauge-needle { position:absolute; bottom:0; left:50%; width:3px; height:70px; transform-origin:bottom center; background:white; border-radius:3px; transition:transform 1.5s cubic-bezier(0.34,1.56,0.64,1); }
+
+  /* Emotion pill */
+  .emotion-pill { display:inline-flex; align-items:center; gap:6px; padding:4px 12px; border-radius:999px; font-size:12px; font-weight:600; }
+
+  /* Heatmap */
+  .heat-cell { transition:all 0.3s; cursor:default; }
+  .heat-cell:hover { transform:scale(1.05); z-index:10; }
+
+  /* Scroll reveal */
+  .reveal { opacity:0; transform:translateY(25px); transition:all 0.6s ease; }
+  .reveal.visible { opacity:1; transform:translateY(0); }
+
+  ::-webkit-scrollbar { width:6px; }
+  ::-webkit-scrollbar-track { background:var(--bg); }
+  ::-webkit-scrollbar-thumb { background:rgba(0,212,255,0.3); border-radius:3px; }
+
+  /* Animated progress bar */
+  .bar-fill { height:8px; border-radius:4px; transition:width 1.5s ease; }
+  @keyframes pulse2 { 0%,100%{opacity:1} 50%{opacity:0.6} }
+  .live-dot { animation:pulse2 2s infinite; }
+</style>
+</head>
+<body>
+<div class="bg-mesh"></div>
+<div class="fixed inset-0 dot-grid pointer-events-none z-0 opacity-40"></div>
+
+<!-- NAV -->
+<nav class="sticky top-0 z-50 glass border-b" style="border-bottom:1px solid var(--border);">
+  <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-2">
+      <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-purple-600 flex items-center justify-center text-sm font-bold">S</div>
+      <span class="text-lg font-bold text-white">StockSense <span class="text-cyan">AI</span></span>
+    </a>
+    <div class="hidden md:flex items-center gap-8">
+      <a href="/" class="text-sm text-slate-400 hover:text-cyan transition-colors">Home</a>
+      <a href="/prediction" class="text-sm text-slate-400 hover:text-cyan transition-colors">Predict</a>
+      <span class="text-sm text-cyan font-medium">Sentiment</span>
+    </div>
+    <a href="/prediction" class="btn-primary px-5 py-2 rounded-xl text-sm font-semibold hidden sm:block">Launch Dashboard</a>
+  </div>
+</nav>
+
+<main class="relative z-10 max-w-7xl mx-auto px-4 py-10">
+
+  <!-- Page Header -->
+  <div class="mb-10 reveal">
+    <div class="flex items-center gap-3 mb-3">
+      <div class="inline-flex items-center gap-2 glass px-3 py-1.5 rounded-full text-xs font-medium text-cyan">
+        <span class="live-dot w-2 h-2 rounded-full bg-green-400 inline-block"></span>
+        Live Market Psychology
+      </div>
+    </div>
+    <h1 class="text-4xl font-bold text-white mb-2">Market <span class="gradient-text">Sentiment Dashboard</span></h1>
+    <p class="text-slate-400">Real-time AI analysis of market mood, emotion signals, and fear/greed dynamics.</p>
+  </div>
+
+  <!-- Top row: Fear/Greed + Overall Mood + Index -->
+  <div class="grid lg:grid-cols-3 gap-6 mb-8">
+
+    <!-- Fear & Greed Gauge -->
+    <div class="glass-strong rounded-2xl p-6 text-center glow-cyan card-hover reveal">
+      <h3 class="text-sm text-slate-400 font-medium mb-4 uppercase tracking-wider">Fear & Greed Index</h3>
+      <div class="relative mx-auto mb-2" style="width:220px; height:130px;">
+        <svg viewBox="0 0 220 120" class="w-full">
+          <!-- Gauge arc -->
+          <defs>
+            <linearGradient id="gaugeGrad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#ef4444"/>
+              <stop offset="30%" stop-color="#f59e0b"/>
+              <stop offset="60%" stop-color="#eab308"/>
+              <stop offset="100%" stop-color="#10b981"/>
+            </linearGradient>
+          </defs>
+          <!-- Background arc -->
+          <path d="M 20 110 A 90 90 0 0 1 200 110" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="18" stroke-linecap="round"/>
+          <!-- Colored arc -->
+          <path d="M 20 110 A 90 90 0 0 1 200 110" fill="none" stroke="url(#gaugeGrad)" stroke-width="18" stroke-linecap="round"/>
+          <!-- Segment labels -->
+          <text x="14" y="108" fill="#ef4444" font-size="8" font-family="Space Grotesk">FEAR</text>
+          <text x="174" y="108" fill="#10b981" font-size="8" font-family="Space Grotesk">GREED</text>
+          <!-- Needle (58° from left = moderate greed) -->
+          <g id="gaugeNeedle" transform="rotate(-20 110 110)" style="transform-origin:110px 110px; transition:transform 1.5s cubic-bezier(0.34,1.56,0.64,1)">
+            <line x1="110" y1="110" x2="110" y2="30" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+            <circle cx="110" cy="110" r="5" fill="white"/>
+          </g>
+        </svg>
+        <div class="absolute bottom-0 left-1/2 -translate-x-1/2 text-center">
+          <div class="text-4xl font-bold text-white" id="fearGreedValue">62</div>
+          <div class="text-xs text-green-400 font-semibold mt-0.5">GREED</div>
+        </div>
+      </div>
+      <div class="grid grid-cols-5 gap-1 mt-4 text-xs">
+        <div class="text-center"><div class="h-1.5 rounded bg-red-500/70 mb-1"></div><span class="text-slate-500">Extreme<br>Fear</span></div>
+        <div class="text-center"><div class="h-1.5 rounded bg-orange-500/70 mb-1"></div><span class="text-slate-500">Fear</span></div>
+        <div class="text-center"><div class="h-1.5 rounded bg-yellow-500/70 mb-1"></div><span class="text-slate-500">Neutral</span></div>
+        <div class="text-center"><div class="h-1.5 rounded bg-lime-500/70 mb-1"></div><span class="text-slate-500">Greed</span></div>
+        <div class="text-center"><div class="h-1.5 rounded bg-green-500/70 mb-1"></div><span class="text-slate-500">Extreme<br>Greed</span></div>
+      </div>
+    </div>
+
+    <!-- Overall Market Mood -->
+    <div class="glass-strong rounded-2xl p-6 card-hover reveal" style="transition-delay:0.1s">
+      <h3 class="text-sm text-slate-400 font-medium mb-4 uppercase tracking-wider">Overall Market Mood</h3>
+      <div class="text-center py-4">
+        <div class="text-7xl mb-3" id="moodEmoji">😤</div>
+        <div class="text-2xl font-bold text-white mb-1" id="moodLabel">Bullish</div>
+        <div class="text-sm text-slate-400">Confidence: <span class="text-cyan font-semibold">74%</span></div>
+      </div>
+      <div class="grid grid-cols-2 gap-3 mt-4">
+        <div class="glass rounded-xl p-3 text-center">
+          <div class="text-xs text-slate-500 mb-1">Bullish Signals</div>
+          <div class="text-lg font-bold text-green-400">68%</div>
+        </div>
+        <div class="glass rounded-xl p-3 text-center">
+          <div class="text-xs text-slate-500 mb-1">Bearish Signals</div>
+          <div class="text-lg font-bold text-red-400">32%</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Confidence Scores -->
+    <div class="glass-strong rounded-2xl p-6 card-hover reveal" style="transition-delay:0.2s">
+      <h3 class="text-sm text-slate-400 font-medium mb-4 uppercase tracking-wider">AI Sentiment Breakdown</h3>
+      <div class="space-y-4">
+        <div>
+          <div class="flex justify-between text-xs mb-1.5"><span class="text-white font-medium">😤 Bullish</span><span class="text-green-400">68%</span></div>
+          <div class="h-2 bg-slate-800 rounded-full"><div class="bar-fill bg-green-500" style="width:0" data-width="68%"></div></div>
+        </div>
+        <div>
+          <div class="flex justify-between text-xs mb-1.5"><span class="text-white font-medium">😰 Bearish</span><span class="text-red-400">15%</span></div>
+          <div class="h-2 bg-slate-800 rounded-full"><div class="bar-fill bg-red-500" style="width:0" data-width="15%"></div></div>
+        </div>
+        <div>
+          <div class="flex justify-between text-xs mb-1.5"><span class="text-white font-medium">😱 Panic</span><span class="text-orange-400">5%</span></div>
+          <div class="h-2 bg-slate-800 rounded-full"><div class="bar-fill bg-orange-500" style="width:0" data-width="5%"></div></div>
+        </div>
+        <div>
+          <div class="flex justify-between text-xs mb-1.5"><span class="text-white font-medium">😤 Greed</span><span class="text-cyan" style="color:var(--cyan)">8%</span></div>
+          <div class="h-2 bg-slate-800 rounded-full"><div class="bar-fill" style="width:0;background:var(--cyan)" data-width="8%"></div></div>
+        </div>
+        <div>
+          <div class="flex justify-between text-xs mb-1.5"><span class="text-white font-medium">😐 Neutral</span><span class="text-slate-400">4%</span></div>
+          <div class="h-2 bg-slate-800 rounded-full"><div class="bar-fill bg-slate-500" style="width:0" data-width="4%"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sentiment Trend Chart -->
+  <div class="grid lg:grid-cols-2 gap-6 mb-8">
+    <div class="glass-strong rounded-2xl p-6 card-hover reveal">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-sm text-slate-400 font-medium uppercase tracking-wider">Sentiment Trend (30 Days)</h3>
+        <span class="emotion-pill" style="background:rgba(16,185,129,0.1); color:#10b981; border:1px solid rgba(16,185,129,0.2);">▲ Improving</span>
+      </div>
+      <canvas id="sentimentChart" height="200"></canvas>
+    </div>
+
+    <div class="glass-strong rounded-2xl p-6 card-hover reveal" style="transition-delay:0.1s">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-sm text-slate-400 font-medium uppercase tracking-wider">Signal Distribution</h3>
+      </div>
+      <canvas id="signalChart" height="200"></canvas>
+    </div>
+  </div>
+
+  <!-- Sector Heatmap -->
+  <div class="glass-strong rounded-2xl p-6 mb-8 reveal">
+    <h3 class="text-sm text-slate-400 font-medium uppercase tracking-wider mb-5">Sector Sentiment Heatmap</h3>
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3" id="heatmap">
+    </div>
+  </div>
+
+  <!-- Emotion Meter Cards -->
+  <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div class="glass rounded-2xl p-5 card-hover reveal text-center">
+      <div class="text-4xl mb-3">😱</div>
+      <div class="text-white font-semibold mb-1">Panic Index</div>
+      <div class="text-3xl font-bold text-orange-400 mb-2">12</div>
+      <div class="h-1.5 bg-slate-800 rounded-full"><div class="bar-fill bg-orange-500" style="width:0" data-width="12%"></div></div>
+      <div class="text-xs text-slate-500 mt-2">Low Panic — Markets stable</div>
+    </div>
+    <div class="glass rounded-2xl p-5 card-hover reveal text-center" style="transition-delay:0.05s">
+      <div class="text-4xl mb-3">😤</div>
+      <div class="text-white font-semibold mb-1">Greed Meter</div>
+      <div class="text-3xl font-bold text-cyan mb-2" style="color:var(--cyan)">62</div>
+      <div class="h-1.5 bg-slate-800 rounded-full"><div class="bar-fill" style="width:0;background:var(--cyan)" data-width="62%"></div></div>
+      <div class="text-xs text-slate-500 mt-2">Moderate greed detected</div>
+    </div>
+    <div class="glass rounded-2xl p-5 card-hover reveal text-center" style="transition-delay:0.1s">
+      <div class="text-4xl mb-3">🐂</div>
+      <div class="text-white font-semibold mb-1">Bull Strength</div>
+      <div class="text-3xl font-bold text-green-400 mb-2">74</div>
+      <div class="h-1.5 bg-slate-800 rounded-full"><div class="bar-fill bg-green-500" style="width:0" data-width="74%"></div></div>
+      <div class="text-xs text-slate-500 mt-2">Strong bullish momentum</div>
+    </div>
+    <div class="glass rounded-2xl p-5 card-hover reveal text-center" style="transition-delay:0.15s">
+      <div class="text-4xl mb-3">🐻</div>
+      <div class="text-white font-semibold mb-1">Bear Pressure</div>
+      <div class="text-3xl font-bold text-red-400 mb-2">26</div>
+      <div class="h-1.5 bg-slate-800 rounded-full"><div class="bar-fill bg-red-500" style="width:0" data-width="26%"></div></div>
+      <div class="text-xs text-slate-500 mt-2">Weak bear presence</div>
+    </div>
+  </div>
+
+  <!-- Market Signals Feed -->
+  <div class="glass-strong rounded-2xl p-6 reveal">
+    <h3 class="text-sm text-slate-400 font-medium uppercase tracking-wider mb-4">Live AI Market Signals</h3>
+    <div class="space-y-3" id="signalFeed">
+    </div>
+  </div>
+
+</main>
+
+<!-- Footer -->
+<footer class="relative z-10 border-t mt-16 py-8 px-4 text-center" style="border-color:var(--border);">
+  <p class="text-slate-500 text-xs">© 2026 StockSense AI — Sentiment data is AI-generated for educational purposes only.</p>
+</footer>
+
+<script>
+// Scroll reveal
+const observer = new IntersectionObserver(entries => entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); }), {threshold:0.1});
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// Animate bars when visible
+const barObserver = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if(e.isIntersecting) {
+      e.target.querySelectorAll('.bar-fill').forEach(b => { setTimeout(() => { b.style.width = b.dataset.width; }, 200); });
+      barObserver.unobserve(e.target);
+    }
+  });
+}, {threshold:0.3});
+document.querySelectorAll('.glass, .glass-strong').forEach(el => barObserver.observe(el));
+
+// Gauge needle animation
+setTimeout(() => {
+  const needle = document.getElementById('gaugeNeedle');
+  if(needle) needle.style.transform = 'rotate(24deg)';
+}, 600);
+
+// Sentiment trend chart
+const sCtx = document.getElementById('sentimentChart').getContext('2d');
+const days = Array.from({length:30}, (_,i) => {
+  const d = new Date(); d.setDate(d.getDate() - (29 - i));
+  return d.toLocaleDateString('en',{month:'short',day:'numeric'});
+});
+const bullData = [45,48,42,50,55,52,58,54,60,57,62,59,65,68,64,70,67,72,69,75,71,74,70,76,73,78,75,80,77,74];
+const bearData = [40,38,42,36,32,35,28,32,26,30,24,28,22,18,22,16,20,14,18,12,16,14,18,12,15,10,13,8,11,15];
+
+new Chart(sCtx, {
+  type: 'line',
+  data: {
+    labels: days,
+    datasets: [{
+      label: 'Bullish %', data: bullData,
+      borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.08)',
+      fill: true, tension: 0.4, pointRadius: 0,
+    }, {
+      label: 'Bearish %', data: bearData,
+      borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.05)',
+      fill: true, tension: 0.4, pointRadius: 0,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    scales: {
+      x: { ticks:{color:'#64748b', font:{size:10}, maxTicksLimit:7}, grid:{color:'rgba(255,255,255,0.04)'} },
+      y: { ticks:{color:'#64748b', font:{size:10}}, grid:{color:'rgba(255,255,255,0.04)'}, min:0, max:100 }
+    },
+    plugins: { legend:{labels:{color:'#94a3b8', font:{size:11}}} }
+  }
+});
+
+// Signal distribution donut
+const dCtx = document.getElementById('signalChart').getContext('2d');
+new Chart(dCtx, {
+  type: 'doughnut',
+  data: {
+    labels: ['Bullish','Bearish','Neutral','Panic','Greed'],
+    datasets: [{ data:[68,15,4,5,8],
+      backgroundColor:['rgba(16,185,129,0.8)','rgba(239,68,68,0.8)','rgba(100,116,139,0.8)','rgba(249,115,22,0.8)','rgba(0,212,255,0.8)'],
+      borderColor:'rgba(0,0,0,0.2)', borderWidth:1 }]
+  },
+  options: {
+    responsive:true, maintainAspectRatio:false, cutout:'65%',
+    plugins:{legend:{position:'right',labels:{color:'#94a3b8',font:{size:11},padding:12}}}
+  }
+});
+
+// Sector heatmap
+const sectors = [
+  {name:'Banking',val:78,color:'rgba(16,185,129,0.7)',mood:'🐂 Bullish'},
+  {name:'IT / Tech',val:65,color:'rgba(16,185,129,0.5)',mood:'📈 Positive'},
+  {name:'Energy',val:71,color:'rgba(16,185,129,0.6)',mood:'🐂 Bullish'},
+  {name:'Auto',val:45,color:'rgba(234,179,8,0.5)',mood:'😐 Neutral'},
+  {name:'FMCG',val:58,color:'rgba(16,185,129,0.4)',mood:'📈 Positive'},
+  {name:'Pharma',val:38,color:'rgba(249,115,22,0.4)',mood:'📉 Cautious'},
+  {name:'Metals',val:52,color:'rgba(234,179,8,0.4)',mood:'😐 Neutral'},
+  {name:'Realty',val:82,color:'rgba(16,185,129,0.8)',mood:'🚀 Strong'},
+  {name:'Telecom',val:44,color:'rgba(249,115,22,0.35)',mood:'📉 Cautious'},
+  {name:'PSU Banks',val:69,color:'rgba(16,185,129,0.55)',mood:'📈 Positive'},
+];
+const heatmap = document.getElementById('heatmap');
+sectors.forEach(s => {
+  const cell = document.createElement('div');
+  cell.className = 'heat-cell glass rounded-xl p-4 text-center';
+  cell.style.borderColor = s.color.replace('0.','0.4').replace('rgba','rgba').replace(')',')');
+  cell.style.background = s.color.replace(/[\d.]+\)$/, '0.08)');
+  cell.innerHTML = `<div class="text-white font-semibold text-sm mb-1">${s.name}</div>
+    <div class="text-2xl font-bold mb-1" style="color:${s.val>60?'#10b981':s.val>45?'#f59e0b':'#ef4444'}">${s.val}</div>
+    <div class="text-xs text-slate-400">${s.mood}</div>`;
+  heatmap.appendChild(cell);
+});
+
+// Signal feed
+const signals = [
+  {time:'2 min ago', icon:'📈', msg:'RELIANCE.NS showing strong breakout above EMA 20/50', tag:'BUY', tagColor:'#10b981'},
+  {time:'8 min ago', icon:'🤖', msg:'AI detected unusual volume spike in HDFCBANK.NS', tag:'WATCH', tagColor:'#f59e0b'},
+  {time:'15 min ago', icon:'📉', msg:'TSLA correction possible — RSI overbought at 74.2', tag:'CAUTION', tagColor:'#ef4444'},
+  {time:'22 min ago', icon:'🐂', msg:'Indian market breadth: 68% stocks above 50-day EMA', tag:'BULLISH', tagColor:'#10b981'},
+  {time:'31 min ago', icon:'😤', msg:'Greed index rose from 54 to 62 — momentum building', tag:'INFO', tagColor:'#00d4ff'},
+  {time:'45 min ago', icon:'📊', msg:'INFY.NS consolidating near support — potential reversal', tag:'NEUTRAL', tagColor:'#64748b'},
+];
+const feed = document.getElementById('signalFeed');
+signals.forEach((s,i) => {
+  const div = document.createElement('div');
+  div.className = 'glass rounded-xl px-4 py-3 flex items-center gap-3';
+  div.innerHTML = `<span class="text-xl flex-shrink-0">${s.icon}</span>
+    <div class="flex-1 min-w-0">
+      <p class="text-sm text-slate-300">${s.msg}</p>
+      <span class="text-xs text-slate-500">${s.time}</span>
+    </div>
+    <span class="flex-shrink-0 px-2.5 py-1 rounded-full text-xs font-bold border" style="color:${s.tagColor};border-color:${s.tagColor}40;background:${s.tagColor}10">${s.tag}</span>`;
+  feed.appendChild(div);
+});
+</script>
+</body>
+</html>

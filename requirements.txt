@@ -17,3 +17,4 @@ yfinance
 flask
 python-dotenv
 gunicorn
+openai

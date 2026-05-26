@@ -15,8 +15,9 @@ import matplotlib.pyplot as plt
 
 import yfinance as yf
 from sklearn.preprocessing import MinMaxScaler
-from flask import Flask, render_template, request, send_file
+from flask import Flask, render_template, request, send_file, jsonify
 from tensorflow.keras.models import load_model
+from openai import OpenAI
 from tensorflow.keras.layers import InputLayer
 from dotenv import load_dotenv
 
@@ -365,12 +366,25 @@ def calculate_macd(close_series: pd.Series):
 # PLOT HELPERS
 # =================================================
 def save_plot(path, plot_fn):
-    plt.figure(figsize=(11, 5))
+    plt.style.use("dark_background")
+    fig = plt.figure(figsize=(11, 5))
+    fig.patch.set_facecolor("#0d1117")
+    ax = fig.add_subplot(111)
+    ax.set_facecolor("#0d1117")
     plot_fn()
-    plt.legend()
+    ax.spines["bottom"].set_color("#1e2d3d")
+    ax.spines["top"].set_color("#1e2d3d")
+    ax.spines["left"].set_color("#1e2d3d")
+    ax.spines["right"].set_color("#1e2d3d")
+    ax.tick_params(colors="#64748b")
+    ax.xaxis.label.set_color("#64748b")
+    ax.yaxis.label.set_color("#64748b")
+    ax.title.set_color("#94a3b8")
+    plt.legend(facecolor="#0d1117", edgecolor="#1e2d3d", labelcolor="#94a3b8")
     plt.tight_layout()
-    plt.savefig(path, dpi=150)
+    plt.savefig(path, dpi=150, facecolor="#0d1117")
     plt.close()
+    plt.style.use("default")
 
 def ensure_static_dir():
     os.makedirs(STATIC_DIR, exist_ok=True)
@@ -685,6 +699,47 @@ def download_file(filename):
     if os.path.exists(path):
         return send_file(path, as_attachment=True)
     return "File not found", 404
+
+@app.route("/sentiment")
+def sentiment():
+    return render_template("sentiment.html")
+
+@app.route("/api/copilot", methods=["POST"])
+def copilot():
+    try:
+        data = request.get_json(force=True)
+        user_message = (data.get("message") or "").strip()
+        stock = (data.get("stock") or "").strip()
+        if not user_message:
+            return jsonify({"reply": "Please ask a question."})
+
+        client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+        system_prompt = (
+            "You are an expert AI stock market trading assistant. "
+            "You give concise, clear, and actionable financial insights. "
+            "Always include: a brief technical analysis, a risk note, and a clear Buy/Hold/Sell suggestion with reasoning. "
+            "Keep responses under 120 words. Use plain language. Do not use markdown headers. "
+            "Always add a disclaimer that this is not financial advice."
+        )
+        if stock:
+            system_prompt += f" The user is currently analyzing {stock}."
+
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_message},
+            ],
+            max_tokens=200,
+            temperature=0.7,
+        )
+        reply = response.choices[0].message.content.strip()
+        return jsonify({"reply": reply})
+
+    except Exception as e:
+        print(f"Copilot error: {e}")
+        return jsonify({"reply": "I'm having trouble connecting right now. Please try again in a moment."})
 
 @app.route("/health")
 def health():

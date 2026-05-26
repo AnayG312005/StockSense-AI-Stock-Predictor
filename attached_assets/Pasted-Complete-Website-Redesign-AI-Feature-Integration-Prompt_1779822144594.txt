@@ -1,0 +1,127 @@
+Complete Website Redesign & AI Feature Integration Prompt for Stock Sense AI
+
+Redesign and upgrade the entire Stock Sense AI website into a futuristic, enterprise-grade AI fintech platform with a highly user-friendly interface, modern dashboard experience, and intelligent stock analytics system. The new design should combine the visual quality of Bloomberg Terminal, TradingView, Groww, Zerodha, and modern AI platforms like ChatGPT while maintaining simplicity for beginners.
+
+The website should feel premium, futuristic, responsive, data-rich, and AI-driven with smooth animations, glassmorphism UI, dark fintech aesthetics, neon highlights, intelligent widgets, and interactive charts.
+
+Core Website Redesign Goals
+
+Completely redesign the website UI/UX to:
+
+Improve user experience
+Make navigation simple and intuitive
+Add advanced AI-powered features
+Create a professional fintech appearance
+Enhance visualization and interactivity
+Make the platform feel like a next-generation AI investment assistant
+
+Use:
+
+Tailwind CSS
+Framer Motion animations
+Responsive layouts
+Modern card-based UI
+Professional typography
+Interactive hover effects
+Dynamic charts and widgets
+Design Theme & Styling
+
+Use a futuristic fintech design with:
+
+Dark mode UI
+Neon blue, cyan, purple, and green highlights
+Glassmorphism cards
+Soft shadows and glowing borders
+Animated background gradients
+Smooth page transitions
+Rounded modern widgets
+AI-themed visual elements
+
+The website should feel:
+
+Intelligent
+Premium
+Minimal yet data-rich
+Easy for beginners
+Powerful for traders
+Redesigned Website Structure
+1. Landing Page (New Hero Section)
+
+Create a modern hero section with:
+
+AI-generated stock visualization background
+Animated candlestick charts
+Floating analytics widgets
+Real-time market ticker
+CTA buttons:
+“Start Predicting”
+“Analyze Stocks”
+“Try AI Copilot”
+
+Add:
+
+Feature highlights
+AI statistics counters
+Testimonials
+Interactive demo preview
+2. AI Market Emotion Analyzer
+
+Build a futuristic AI sentiment analysis module that collects and analyzes:
+
+Twitter/X trends
+Reddit discussions
+Financial news articles
+YouTube finance content
+
+The AI should classify market sentiment into:
+
+Fear
+Greed
+Panic
+Bullish
+Bearish
+
+Visualize the results using:
+
+Emotion meters
+Sentiment heatmaps
+AI confidence gauges
+Live sentiment trend graphs
+Fear & Greed index wheel
+Animated market mood indicators
+
+Add a dedicated “Market Psychology Dashboard” page.
+
+Use NLP and sentiment analysis models for intelligent classification.
+
+3. AI Trading Copilot
+
+Create a conversational AI assistant integrated directly into the dashboard.
+
+The AI assistant should answer questions like:
+
+“Should I invest in Tesla today?”
+“Why is Apple stock falling?”
+“Compare Infosys vs TCS”
+“What is the safest stock this week?”
+
+The AI Copilot must provide:
+
+Technical analysis
+Risk explanation
+Prediction insights
+Market sentiment
+Buy/Sell/Hold recommendations
+Confidence score
+AI reasoning behind predictions
+
+Design the assistant with:
+
+Floating chatbot interface
+Voice input support
+Typing animations
+AI-generated charts in chat
+Smart suggestion prompts
+Real-time contextual recommendations
+
+The AI should feel like a personal financial advisor.
