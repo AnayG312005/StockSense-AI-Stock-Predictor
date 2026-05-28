@@ -3,770 +3,481 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>StockSense AI — Next-Gen AI Investment Platform</title>
+<title>StockSense AI — Institutional-Grade AI Investment Platform</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --cyan: #00d4ff;
-    --purple: #7c3aed;
-    --green: #10b981;
-    --red: #ef4444;
-    --bg: #050b14;
-    --card: rgba(255,255,255,0.03);
-    --border: rgba(0,212,255,0.12);
-    --text: #e2e8f0;
-    --muted: #64748b;
+    --blue-700: #1d4ed8; --blue-600: #2563eb; --blue-500: #3b82f6;
+    --blue-50: #eff6ff; --blue-100: #dbeafe;
+    --slate-800: #1e293b; --slate-600: #475569; --slate-400: #94a3b8;
+    --slate-200: #e2e8f0; --slate-100: #f1f5f9;
+    --green: #059669; --red: #dc2626; --amber: #d97706;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08),0 1px 2px rgba(0,0,0,0.05);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08),0 2px 6px rgba(0,0,0,0.04);
+    --shadow-lg: 0 10px 30px rgba(0,0,0,0.1),0 4px 10px rgba(0,0,0,0.06);
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
-  body {
-    font-family: 'Space Grotesk', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    overflow-x: hidden;
-  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html { scroll-behavior:smooth; }
+  body { font-family:'Inter',sans-serif; background:#f8fafc; color:var(--slate-800); overflow-x:hidden; }
 
-  /* Animated gradient mesh background */
-  .bg-mesh {
-    position: fixed; inset: 0; z-index: 0; pointer-events: none;
-    background:
-      radial-gradient(ellipse 80% 60% at 20% 20%, rgba(0,212,255,0.06) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 80% at 80% 80%, rgba(124,58,237,0.07) 0%, transparent 60%),
-      radial-gradient(ellipse 50% 50% at 50% 50%, rgba(16,185,129,0.04) 0%, transparent 70%);
-    animation: meshMove 12s ease-in-out infinite alternate;
-  }
-  @keyframes meshMove {
-    0% { transform: scale(1) translate(0,0); }
-    100% { transform: scale(1.05) translate(-10px, -10px); }
-  }
+  /* Nav */
+  .nav-glass { background:rgba(255,255,255,0.92); backdrop-filter:blur(20px); border-bottom:1px solid var(--slate-200); }
+  .nav-link { color:var(--slate-600); font-size:14px; font-weight:500; transition:color 0.2s; }
+  .nav-link:hover { color:var(--blue-700); }
 
-  /* Glass cards */
-  .glass {
-    background: var(--card);
-    border: 1px solid var(--border);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-  }
-  .glass-strong {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(0,212,255,0.2);
-    backdrop-filter: blur(24px);
-  }
+  /* Gradient */
+  .gradient-text { background:linear-gradient(135deg,var(--blue-700),var(--blue-500)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+  .gradient-text-g { background:linear-gradient(135deg,#059669,#0891b2); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
 
-  /* Neon glow */
-  .glow-cyan { box-shadow: 0 0 30px rgba(0,212,255,0.15), 0 0 60px rgba(0,212,255,0.05); }
-  .glow-purple { box-shadow: 0 0 30px rgba(124,58,237,0.2), 0 0 60px rgba(124,58,237,0.08); }
-  .glow-green { box-shadow: 0 0 20px rgba(16,185,129,0.2); }
-  .text-cyan { color: var(--cyan); }
-  .text-purple-400 { color: #a78bfa; }
-  .border-cyan { border-color: var(--cyan) !important; }
+  /* Hero BG */
+  .hero-bg {
+    background: linear-gradient(150deg, #eff6ff 0%, #f8fafc 40%, #f0fdf4 100%);
+    position: relative; overflow: hidden;
+  }
+  .hero-blob { position:absolute; border-radius:50%; filter:blur(80px); opacity:0.35; }
+
+  /* Cards */
+  .card { background:white; border:1px solid var(--slate-200); border-radius:16px; box-shadow:var(--shadow); }
+  .card-blue { background:var(--blue-50); border:1px solid var(--blue-100); border-radius:16px; }
+  .card-hover { transition:all 0.25s; }
+  .card-hover:hover { transform:translateY(-3px); box-shadow:var(--shadow-lg); }
+
+  /* Buttons */
+  .btn-primary { background:var(--blue-700); color:white; border:none; cursor:pointer; transition:all 0.2s; font-family:'Inter',sans-serif; font-weight:600; }
+  .btn-primary:hover { background:var(--blue-600); transform:translateY(-1px); box-shadow:0 6px 20px rgba(29,78,216,0.35); }
+  .btn-outline { background:white; border:1.5px solid var(--blue-700); color:var(--blue-700); cursor:pointer; transition:all 0.2s; font-weight:600; }
+  .btn-outline:hover { background:var(--blue-50); transform:translateY(-1px); }
 
   /* Ticker */
-  .ticker-wrap { overflow: hidden; background: rgba(0,212,255,0.05); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-  .ticker-track { display: flex; animation: ticker 40s linear infinite; white-space: nowrap; }
-  .ticker-track:hover { animation-play-state: paused; }
-  @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+  .ticker-wrap { overflow:hidden; background:var(--blue-700); }
+  .ticker-track { display:flex; animation:ticker 45s linear infinite; white-space:nowrap; }
+  .ticker-track:hover { animation-play-state:paused; }
+  @keyframes ticker { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
 
-  /* Candlestick SVG animation */
-  .candle-bar { transform-origin: bottom; animation: candleGrow 2s ease-out forwards; }
-  @keyframes candleGrow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+  /* Feature icons */
+  .feat-icon { width:52px; height:52px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
 
-  /* Counter animation */
-  .counter { display: inline-block; }
-
-  /* Gradient text */
-  .gradient-text {
-    background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 50%, #10b981 100%);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-  .gradient-text-2 {
-    background: linear-gradient(135deg, #e2e8f0 0%, #00d4ff 100%);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  /* CTA button */
-  .btn-primary {
-    background: linear-gradient(135deg, #00d4ff, #7c3aed);
-    color: white; border: none; cursor: pointer;
-    transition: all 0.3s ease; position: relative; overflow: hidden;
-  }
-  .btn-primary::before {
-    content: ''; position: absolute; inset: 0;
-    background: linear-gradient(135deg, #7c3aed, #00d4ff);
-    opacity: 0; transition: opacity 0.3s;
-  }
-  .btn-primary:hover::before { opacity: 1; }
-  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,212,255,0.4); }
-  .btn-primary span { position: relative; z-index: 1; }
-
-  .btn-outline {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--text);
-    transition: all 0.3s ease;
-  }
-  .btn-outline:hover {
-    border-color: var(--cyan);
-    color: var(--cyan);
-    box-shadow: 0 0 20px rgba(0,212,255,0.2);
-    transform: translateY(-2px);
-  }
-
-  /* Feature card hover */
-  .feature-card {
-    transition: all 0.3s ease; cursor: default;
-  }
-  .feature-card:hover {
-    transform: translateY(-4px);
-    border-color: rgba(0,212,255,0.35) !important;
-    box-shadow: 0 20px 60px rgba(0,212,255,0.08);
-  }
-
-  /* Floating widget */
-  .floating-widget { animation: float 4s ease-in-out infinite; }
-  .floating-widget:nth-child(2) { animation-delay: 1.5s; animation-direction: alternate-reverse; }
-  @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-
-  /* Pulse dot */
-  .pulse-dot::before {
-    content: ''; display: inline-block; width: 8px; height: 8px;
-    border-radius: 50%; background: var(--green);
-    animation: pulse 2s infinite;
-    margin-right: 6px; vertical-align: middle;
-  }
-  @keyframes pulse { 0%,100% { opacity:1; transform: scale(1); } 50% { opacity:0.5; transform: scale(1.5); } }
-
-  /* FAQ accordion */
-  .faq-item { transition: all 0.3s; }
-  .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; }
-  .faq-answer.open { max-height: 200px; }
-  .faq-icon { transition: transform 0.3s; }
-  .faq-icon.open { transform: rotate(45deg); }
+  /* Badge */
+  .badge { display:inline-flex; align-items:center; gap:5px; padding:4px 12px; border-radius:999px; font-size:12px; font-weight:600; }
+  .badge-blue { background:var(--blue-50); color:var(--blue-700); border:1px solid var(--blue-100); }
+  .badge-green { background:#f0fdf4; color:#059669; border:1px solid #bbf7d0; }
 
   /* Scroll reveal */
-  .reveal { opacity: 0; transform: translateY(30px); transition: all 0.7s ease; }
-  .reveal.visible { opacity: 1; transform: translateY(0); }
-  .reveal-left { opacity: 0; transform: translateX(-30px); transition: all 0.7s ease; }
-  .reveal-left.visible { opacity: 1; transform: translateX(0); }
-  .reveal-right { opacity: 0; transform: translateX(30px); transition: all 0.7s ease; }
-  .reveal-right.visible { opacity: 1; transform: translateX(0); }
+  .reveal { opacity:0; transform:translateY(24px); transition:all 0.65s ease; }
+  .reveal.visible { opacity:1; transform:translateY(0); }
+  .reveal-l { opacity:0; transform:translateX(-24px); transition:all 0.65s ease; }
+  .reveal-l.visible { opacity:1; transform:translateX(0); }
+  .reveal-r { opacity:0; transform:translateX(24px); transition:all 0.65s ease; }
+  .reveal-r.visible { opacity:1; transform:translateX(0); }
 
-  /* Sparkline */
-  .sparkline { fill: none; stroke-width: 2; vector-effect: non-scaling-stroke; }
+  /* Counter */
+  .counter { display:inline-block; }
 
-  /* Mobile nav */
-  #mobile-menu { display: none; }
-  #mobile-menu.open { display: flex; }
+  /* Pulse */
+  @keyframes pulse2 { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.4)} }
+  .pulse-dot { animation:pulse2 2s infinite; }
+
+  /* Float */
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+  .float-anim { animation:float 4s ease-in-out infinite; }
+  .float-anim-2 { animation:float 5s ease-in-out infinite 1s; }
+  .float-anim-3 { animation:float 4.5s ease-in-out infinite 0.5s; }
+
+  /* Candlestick colors */
+  .candle-green { fill:#059669; }
+  .candle-red { fill:#dc2626; }
+
+  /* FAQ */
+  .faq-answer { max-height:0; overflow:hidden; transition:max-height 0.35s ease; }
+  .faq-answer.open { max-height:180px; }
+  .faq-icon { transition:transform 0.3s; display:inline-block; }
+  .faq-icon.open { transform:rotate(45deg); }
 
   /* Scrollbar */
-  ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: var(--bg); }
-  ::-webkit-scrollbar-thumb { background: rgba(0,212,255,0.3); border-radius: 3px; }
+  ::-webkit-scrollbar { width:6px; }
+  ::-webkit-scrollbar-track { background:#f1f5f9; }
+  ::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:3px; }
 
-  /* Loading spinner */
-  @keyframes spin { to { transform: rotate(360deg); } }
+  /* Mobile nav */
+  #mobile-menu { display:none; }
+  #mobile-menu.open { display:flex; }
 
-  /* Grid dots */
-  .dot-grid {
-    background-image: radial-gradient(rgba(0,212,255,0.08) 1px, transparent 1px);
-    background-size: 30px 30px;
-  }
+  /* Step number */
+  .step-num { width:48px; height:48px; border-radius:50%; background:linear-gradient(135deg,var(--blue-700),var(--blue-500)); color:white; font-size:18px; font-weight:700; display:flex; align-items:center; justify-content:center; margin:0 auto 16px; }
+
+  /* Stat divider */
+  .stat-div { border-right:1px solid var(--slate-200); }
+  @media(max-width:640px) { .stat-div { border-right:none; border-bottom:1px solid var(--slate-200); } }
 </style>
 </head>
 <body>
 
-<!-- Animated Background -->
-<div class="bg-mesh"></div>
-<div class="fixed inset-0 dot-grid pointer-events-none z-0 opacity-50"></div>
-
-<!-- ===== NAVIGATION ===== -->
-<nav class="sticky top-0 z-50 glass border-b" style="border-bottom: 1px solid var(--border);">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-    <a href="/" class="flex items-center gap-2">
-      <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-purple-600 flex items-center justify-center text-sm font-bold">S</div>
-      <span class="text-lg font-bold text-white">StockSense <span class="text-cyan">AI</span></span>
+<!-- ===== NAV ===== -->
+<nav class="nav-glass sticky top-0 z-50">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-2.5">
+      <div class="w-8 h-8 rounded-lg bg-blue-700 flex items-center justify-center text-white text-sm font-bold">S</div>
+      <span class="text-base font-bold text-slate-800">StockSense <span style="color:var(--blue-700)">AI</span></span>
     </a>
-    <div class="hidden md:flex items-center gap-8">
-      <a href="#features" class="text-sm text-slate-400 hover:text-cyan transition-colors">Features</a>
-      <a href="/sentiment" class="text-sm text-slate-400 hover:text-cyan transition-colors">Sentiment</a>
-      <a href="#how-it-works" class="text-sm text-slate-400 hover:text-cyan transition-colors">How It Works</a>
-      <a href="#faq" class="text-sm text-slate-400 hover:text-cyan transition-colors">FAQ</a>
+    <div class="hidden md:flex items-center gap-7">
+      <a href="#features" class="nav-link">Features</a>
+      <a href="/risk" class="nav-link">Risk Radar</a>
+      <a href="/portfolio" class="nav-link">Portfolio</a>
+      <a href="/sentiment" class="nav-link">Sentiment</a>
+      <a href="#faq" class="nav-link">FAQ</a>
     </div>
     <div class="flex items-center gap-3">
-      <a href="/prediction" class="btn-primary px-5 py-2 rounded-xl text-sm font-semibold hidden sm:block">
-        <span>Launch Dashboard</span>
-      </a>
-      <button class="md:hidden text-slate-400 hover:text-white" onclick="toggleMobileMenu()">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      <a href="/prediction" class="btn-outline px-4 py-2 rounded-xl text-sm hidden sm:block">Dashboard</a>
+      <a href="/prediction" class="btn-primary px-5 py-2 rounded-xl text-sm">Start Free →</a>
+      <button class="md:hidden text-slate-500" onclick="document.getElementById('mobile-menu').classList.toggle('open')">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
       </button>
     </div>
   </div>
-  <div id="mobile-menu" class="flex-col px-4 pb-4 md:hidden gap-3">
-    <a href="#features" class="block text-sm text-slate-400 py-2">Features</a>
-    <a href="/sentiment" class="block text-sm text-slate-400 py-2">Sentiment</a>
-    <a href="#how-it-works" class="block text-sm text-slate-400 py-2">How It Works</a>
-    <a href="#faq" class="block text-sm text-slate-400 py-2">FAQ</a>
-    <a href="/prediction" class="btn-primary px-5 py-2 rounded-xl text-sm font-semibold text-center mt-2"><span>Launch Dashboard</span></a>
+  <div id="mobile-menu" class="flex-col px-4 pb-4 md:hidden gap-2 border-t" style="border-color:var(--slate-200);">
+    <a href="#features" class="block text-sm text-slate-600 py-2">Features</a>
+    <a href="/risk" class="block text-sm text-slate-600 py-2">Risk Radar</a>
+    <a href="/portfolio" class="block text-sm text-slate-600 py-2">Portfolio</a>
+    <a href="/sentiment" class="block text-sm text-slate-600 py-2">Sentiment</a>
+    <a href="/prediction" class="btn-primary block text-center px-4 py-2.5 rounded-xl text-sm mt-2">Start Free</a>
   </div>
 </nav>
 
-<!-- ===== LIVE TICKER ===== -->
-<div class="ticker-wrap py-2 relative z-40">
-  <div class="ticker-track" id="tickerTrack">
-    <span class="ticker-item px-8 text-xs font-medium text-slate-400 flex items-center gap-2">
-      <span class="text-green-400 font-semibold">RELIANCE.NS</span> <span class="text-green-400">▲ 2.41%</span>
-    </span>
-    <span class="ticker-item px-8 text-xs font-medium text-slate-400 flex items-center gap-2">
-      <span class="text-red-400 font-semibold">TCS.NS</span> <span class="text-red-400">▼ 0.87%</span>
-    </span>
-    <span class="ticker-item px-8 text-xs font-medium text-slate-400 flex items-center gap-2">
-      <span class="text-green-400 font-semibold">AAPL</span> <span class="text-green-400">▲ 1.23%</span>
-    </span>
-    <span class="ticker-item px-8 text-xs font-medium text-slate-400 flex items-center gap-2">
-      <span class="text-red-400 font-semibold">TSLA</span> <span class="text-red-400">▼ 3.12%</span>
-    </span>
-    <span class="ticker-item px-8 text-xs font-medium text-slate-400 flex items-center gap-2">
-      <span class="text-green-400 font-semibold">INFY.NS</span> <span class="text-green-400">▲ 0.54%</span>
-    </span>
-    <span class="ticker-item px-8 text-xs font-medium text-slate-400 flex items-center gap-2">
-      <span class="text-green-400 font-semibold">HDFCBANK.NS</span> <span class="text-green-400">▲ 1.78%</span>
-    </span>
-    <span class="ticker-item px-8 text-xs font-medium text-slate-400 flex items-center gap-2">
-      <span class="text-red-400 font-semibold">GOOGL</span> <span class="text-red-400">▼ 0.33%</span>
-    </span>
-    <span class="ticker-item px-8 text-xs font-medium text-slate-400 flex items-center gap-2">
-      <span class="text-green-400 font-semibold">SBIN.NS</span> <span class="text-green-400">▲ 0.92%</span>
-    </span>
-    <!-- duplicate for seamless loop -->
-    <span class="ticker-item px-8 text-xs font-medium text-slate-400 flex items-center gap-2">
-      <span class="text-green-400 font-semibold">RELIANCE.NS</span> <span class="text-green-400">▲ 2.41%</span>
-    </span>
-    <span class="ticker-item px-8 text-xs font-medium text-slate-400 flex items-center gap-2">
-      <span class="text-red-400 font-semibold">TCS.NS</span> <span class="text-red-400">▼ 0.87%</span>
-    </span>
-    <span class="ticker-item px-8 text-xs font-medium text-slate-400 flex items-center gap-2">
-      <span class="text-green-400 font-semibold">AAPL</span> <span class="text-green-400">▲ 1.23%</span>
-    </span>
-    <span class="ticker-item px-8 text-xs font-medium text-slate-400 flex items-center gap-2">
-      <span class="text-red-400 font-semibold">TSLA</span> <span class="text-red-400">▼ 3.12%</span>
-    </span>
-    <span class="ticker-item px-8 text-xs font-medium text-slate-400 flex items-center gap-2">
-      <span class="text-green-400 font-semibold">INFY.NS</span> <span class="text-green-400">▲ 0.54%</span>
-    </span>
-    <span class="ticker-item px-8 text-xs font-medium text-slate-400 flex items-center gap-2">
-      <span class="text-green-400 font-semibold">HDFCBANK.NS</span> <span class="text-green-400">▲ 1.78%</span>
-    </span>
-    <span class="ticker-item px-8 text-xs font-medium text-slate-400 flex items-center gap-2">
-      <span class="text-red-400 font-semibold">GOOGL</span> <span class="text-red-400">▼ 0.33%</span>
-    </span>
-    <span class="ticker-item px-8 text-xs font-medium text-slate-400 flex items-center gap-2">
-      <span class="text-green-400 font-semibold">SBIN.NS</span> <span class="text-green-400">▲ 0.92%</span>
-    </span>
+<!-- ===== TICKER ===== -->
+<div class="ticker-wrap py-2">
+  <div class="ticker-track">
+    <span class="px-6 text-xs font-semibold text-blue-200 flex items-center gap-2"><span class="text-white">RELIANCE.NS</span> <span class="text-green-300">▲ 2.41%</span></span>
+    <span class="px-6 text-xs font-semibold text-blue-200 flex items-center gap-2"><span class="text-white">TCS.NS</span> <span class="text-red-300">▼ 0.87%</span></span>
+    <span class="px-6 text-xs font-semibold text-blue-200 flex items-center gap-2"><span class="text-white">AAPL</span> <span class="text-green-300">▲ 1.23%</span></span>
+    <span class="px-6 text-xs font-semibold text-blue-200 flex items-center gap-2"><span class="text-white">TSLA</span> <span class="text-red-300">▼ 3.12%</span></span>
+    <span class="px-6 text-xs font-semibold text-blue-200 flex items-center gap-2"><span class="text-white">INFY.NS</span> <span class="text-green-300">▲ 0.54%</span></span>
+    <span class="px-6 text-xs font-semibold text-blue-200 flex items-center gap-2"><span class="text-white">HDFCBANK.NS</span> <span class="text-green-300">▲ 1.78%</span></span>
+    <span class="px-6 text-xs font-semibold text-blue-200 flex items-center gap-2"><span class="text-white">GOOGL</span> <span class="text-red-300">▼ 0.33%</span></span>
+    <span class="px-6 text-xs font-semibold text-blue-200 flex items-center gap-2"><span class="text-white">MSFT</span> <span class="text-green-300">▲ 0.91%</span></span>
+    <span class="px-6 text-xs font-semibold text-blue-200 flex items-center gap-2"><span class="text-white">SBIN.NS</span> <span class="text-green-300">▲ 0.92%</span></span>
+    <span class="px-6 text-xs font-semibold text-blue-200 flex items-center gap-2"><span class="text-white">RELIANCE.NS</span> <span class="text-green-300">▲ 2.41%</span></span>
+    <span class="px-6 text-xs font-semibold text-blue-200 flex items-center gap-2"><span class="text-white">TCS.NS</span> <span class="text-red-300">▼ 0.87%</span></span>
+    <span class="px-6 text-xs font-semibold text-blue-200 flex items-center gap-2"><span class="text-white">AAPL</span> <span class="text-green-300">▲ 1.23%</span></span>
+    <span class="px-6 text-xs font-semibold text-blue-200 flex items-center gap-2"><span class="text-white">TSLA</span> <span class="text-red-300">▼ 3.12%</span></span>
+    <span class="px-6 text-xs font-semibold text-blue-200 flex items-center gap-2"><span class="text-white">INFY.NS</span> <span class="text-green-300">▲ 0.54%</span></span>
+    <span class="px-6 text-xs font-semibold text-blue-200 flex items-center gap-2"><span class="text-white">HDFCBANK.NS</span> <span class="text-green-300">▲ 1.78%</span></span>
+    <span class="px-6 text-xs font-semibold text-blue-200 flex items-center gap-2"><span class="text-white">GOOGL</span> <span class="text-red-300">▼ 0.33%</span></span>
+    <span class="px-6 text-xs font-semibold text-blue-200 flex items-center gap-2"><span class="text-white">MSFT</span> <span class="text-green-300">▲ 0.91%</span></span>
+    <span class="px-6 text-xs font-semibold text-blue-200 flex items-center gap-2"><span class="text-white">SBIN.NS</span> <span class="text-green-300">▲ 0.92%</span></span>
   </div>
 </div>
 
 <!-- ===== HERO ===== -->
-<section class="relative z-10 min-h-screen flex items-center px-4 sm:px-6 pt-10 pb-20 max-w-7xl mx-auto">
-  <div class="grid lg:grid-cols-2 gap-16 items-center w-full">
+<section class="hero-bg relative py-20 lg:py-28 overflow-hidden">
+  <div class="hero-blob w-96 h-96 bg-blue-200 top-0 right-0" style="right:-80px;top:-80px;"></div>
+  <div class="hero-blob w-64 h-64 bg-blue-100 bottom-0 left-0" style="left:-50px;bottom:-50px;"></div>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 grid lg:grid-cols-2 gap-14 items-center relative z-10">
 
-    <!-- LEFT: Text -->
-    <div class="space-y-8 reveal-left">
-      <div class="inline-flex items-center gap-2 glass px-4 py-2 rounded-full text-xs font-medium">
-        <span class="pulse-dot"></span>
-        <span class="text-cyan">Live AI Market Intelligence</span>
+    <!-- LEFT -->
+    <div class="reveal-l space-y-7">
+      <div class="badge badge-blue w-fit">
+        <span class="pulse-dot w-2 h-2 rounded-full bg-blue-600 inline-block"></span>
+        Institutional-Grade AI Platform
       </div>
-
-      <h1 class="text-5xl sm:text-6xl xl:text-7xl font-bold leading-tight tracking-tight">
-        <span class="text-white">Predict.</span><br>
-        <span class="gradient-text">Analyze.</span><br>
-        <span class="text-white">Invest Smart.</span>
+      <h1 class="text-5xl sm:text-6xl font-extrabold leading-tight tracking-tight text-slate-800">
+        AI-Powered<br>
+        <span class="gradient-text">Stock Intelligence</span><br>
+        for Every Trader
       </h1>
-
-      <p class="text-slate-400 text-lg leading-relaxed max-w-lg">
-        AI-powered stock predictions using LSTM neural networks. Get Buy/Sell/Hold signals, technical analysis, and market sentiment — all in one platform.
+      <p class="text-slate-500 text-lg leading-relaxed max-w-lg">
+        LSTM predictions, real-time risk radar, portfolio analysis, and GPT-4 copilot — all in one platform built for professionals and beginners alike.
       </p>
-
       <div class="flex flex-wrap gap-4">
-        <a href="/prediction" class="btn-primary px-7 py-4 rounded-xl font-semibold text-base flex items-center gap-2">
-          <span>🚀 Start Predicting</span>
-        </a>
-        <a href="/sentiment" class="btn-outline px-7 py-4 rounded-xl font-semibold text-base cursor-pointer">
-          📊 Market Sentiment
-        </a>
+        <a href="/prediction" class="btn-primary px-7 py-3.5 rounded-xl text-base">🚀 Launch Dashboard</a>
+        <a href="/risk" class="btn-outline px-7 py-3.5 rounded-xl text-base">🛡 Risk Radar</a>
       </div>
-
-      <!-- Trust badges -->
-      <div class="flex flex-wrap gap-6 pt-2">
-        <div class="flex items-center gap-2 text-sm text-slate-400">
-          <svg class="w-4 h-4 text-cyan" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-          LSTM Neural Network
-        </div>
-        <div class="flex items-center gap-2 text-sm text-slate-400">
-          <svg class="w-4 h-4 text-cyan" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-          Yahoo Finance Data
-        </div>
-        <div class="flex items-center gap-2 text-sm text-slate-400">
-          <svg class="w-4 h-4 text-cyan" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-          AI Copilot Chat
-        </div>
+      <div class="flex flex-wrap gap-5 pt-2">
+        <div class="flex items-center gap-1.5 text-sm text-slate-500"><svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>LSTM Neural Network</div>
+        <div class="flex items-center gap-1.5 text-sm text-slate-500"><svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>GPT-4 Copilot</div>
+        <div class="flex items-center gap-1.5 text-sm text-slate-500"><svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>100% Free</div>
       </div>
     </div>
 
-    <!-- RIGHT: Animated Dashboard Preview -->
-    <div class="relative reveal-right hidden lg:block">
-      <!-- Main card -->
-      <div class="glass-strong rounded-2xl p-6 glow-cyan">
+    <!-- RIGHT: Dashboard mockup -->
+    <div class="reveal-r relative hidden lg:block">
+      <div class="card p-5 shadow-2xl relative float-anim">
+        <!-- Mini chart header -->
         <div class="flex items-center justify-between mb-4">
           <div>
-            <div class="text-xs text-slate-500 mb-1">RELIANCE.NS</div>
-            <div class="text-2xl font-bold text-white">₹2,847.60</div>
-            <div class="text-sm text-green-400 font-medium">▲ +2.41% today</div>
+            <div class="text-xs text-slate-400 mb-0.5">RELIANCE.NS</div>
+            <div class="text-2xl font-bold text-slate-800">₹2,847.60</div>
+            <div class="text-sm text-emerald-600 font-semibold">▲ +2.41% today</div>
           </div>
-          <div class="text-right">
-            <div class="text-xs text-slate-500 mb-1">AI Signal</div>
-            <div class="px-3 py-1 rounded-full text-xs font-bold bg-green-500/20 text-green-400 border border-green-500/30">
-              📈 BUY
-            </div>
-            <div class="text-xs text-slate-500 mt-1">Confidence: High</div>
-          </div>
+          <div class="px-3 py-1.5 rounded-xl text-sm font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">📈 BUY</div>
         </div>
-        <!-- Animated SVG Chart -->
-        <svg viewBox="0 0 400 120" class="w-full" xmlns="http://www.w3.org/2000/svg">
+        <!-- SVG Chart -->
+        <svg viewBox="0 0 400 110" class="w-full mb-4">
           <defs>
-            <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#00d4ff" stop-opacity="0.3"/>
-              <stop offset="100%" stop-color="#00d4ff" stop-opacity="0"/>
+            <linearGradient id="heroGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.15"/>
+              <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/>
             </linearGradient>
           </defs>
-          <path d="M0,100 C20,95 40,90 60,85 C80,80 100,75 120,70 C140,65 160,70 180,60 C200,50 220,55 240,45 C260,35 280,40 300,30 C320,20 340,25 360,15 C380,10 390,12 400,10 L400,120 L0,120 Z" fill="url(#chartGrad)"/>
-          <path d="M0,100 C20,95 40,90 60,85 C80,80 100,75 120,70 C140,65 160,70 180,60 C200,50 220,55 240,45 C260,35 280,40 300,30 C320,20 340,25 360,15 C380,10 390,12 400,10" fill="none" stroke="#00d4ff" stroke-width="2.5"/>
-          <!-- Candlesticks overlay -->
-          <g opacity="0.6">
-            <rect x="30" y="80" width="6" height="20" fill="#10b981" rx="1"/>
-            <line x1="33" y1="78" x2="33" y2="102" stroke="#10b981" stroke-width="1.5"/>
-            <rect x="60" y="72" width="6" height="15" fill="#10b981" rx="1"/>
-            <line x1="63" y1="70" x2="63" y2="89" stroke="#10b981" stroke-width="1.5"/>
-            <rect x="90" y="68" width="6" height="18" fill="#ef4444" rx="1"/>
-            <line x1="93" y1="65" x2="93" y2="88" stroke="#ef4444" stroke-width="1.5"/>
-            <rect x="120" y="60" width="6" height="16" fill="#10b981" rx="1"/>
-            <line x1="123" y1="57" x2="123" y2="78" stroke="#10b981" stroke-width="1.5"/>
-            <rect x="150" y="52" width="6" height="20" fill="#10b981" rx="1"/>
-            <line x1="153" y1="49" x2="153" y2="74" stroke="#10b981" stroke-width="1.5"/>
-            <rect x="180" y="45" width="6" height="14" fill="#ef4444" rx="1"/>
-            <line x1="183" y1="42" x2="183" y2="61" stroke="#ef4444" stroke-width="1.5"/>
-            <rect x="210" y="38" width="6" height="16" fill="#10b981" rx="1"/>
-            <line x1="213" y1="35" x2="213" y2="56" stroke="#10b981" stroke-width="1.5"/>
-            <rect x="240" y="28" width="6" height="18" fill="#10b981" rx="1"/>
-            <line x1="243" y1="25" x2="243" y2="48" stroke="#10b981" stroke-width="1.5"/>
-            <rect x="270" y="22" width="6" height="14" fill="#ef4444" rx="1"/>
-            <line x1="273" y1="19" x2="273" y2="38" stroke="#ef4444" stroke-width="1.5"/>
-            <rect x="300" y="15" width="6" height="16" fill="#10b981" rx="1"/>
-            <line x1="303" y1="12" x2="303" y2="33" stroke="#10b981" stroke-width="1.5"/>
-          </g>
+          <path d="M0,90 C30,85 60,78 90,70 C120,62 150,68 180,55 C210,42 240,48 270,35 C300,22 330,28 360,15 C375,10 390,12 400,10 L400,110 L0,110 Z" fill="url(#heroGrad)"/>
+          <path d="M0,90 C30,85 60,78 90,70 C120,62 150,68 180,55 C210,42 240,48 270,35 C300,22 330,28 360,15 C375,10 390,12 400,10" fill="none" stroke="#2563eb" stroke-width="2.5"/>
         </svg>
-
-        <!-- Indicators row -->
-        <div class="grid grid-cols-3 gap-3 mt-4">
-          <div class="glass rounded-lg p-2 text-center">
-            <div class="text-xs text-slate-500">RSI</div>
-            <div class="text-sm font-bold text-cyan">58.4</div>
+        <div class="grid grid-cols-3 gap-3">
+          <div class="bg-slate-50 rounded-xl p-3 text-center border border-slate-100">
+            <div class="text-xs text-slate-400">RSI</div>
+            <div class="text-sm font-bold text-blue-700">58.4</div>
           </div>
-          <div class="glass rounded-lg p-2 text-center">
-            <div class="text-xs text-slate-500">MACD</div>
-            <div class="text-sm font-bold text-green-400">+12.3</div>
+          <div class="bg-slate-50 rounded-xl p-3 text-center border border-slate-100">
+            <div class="text-xs text-slate-400">MACD</div>
+            <div class="text-sm font-bold text-emerald-600">+12.3</div>
           </div>
-          <div class="glass rounded-lg p-2 text-center">
-            <div class="text-xs text-slate-500">EMA20</div>
-            <div class="text-sm font-bold text-purple-400">2791</div>
+          <div class="bg-slate-50 rounded-xl p-3 text-center border border-slate-100">
+            <div class="text-xs text-slate-400">Risk</div>
+            <div class="text-sm font-bold text-emerald-600">Low 🟢</div>
           </div>
         </div>
       </div>
-
-      <!-- Floating widgets -->
-      <div class="absolute -top-6 -right-4 floating-widget">
-        <div class="glass-strong rounded-xl p-3 text-center glow-green min-w-28">
-          <div class="text-xl">📈</div>
-          <div class="text-xs font-bold text-green-400 mt-1">+24.7%</div>
-          <div class="text-xs text-slate-500">This Month</div>
-        </div>
+      <!-- Floating cards -->
+      <div class="absolute -top-5 -right-5 card p-3 shadow-lg float-anim-2 text-center min-w-28">
+        <div class="text-2xl font-bold text-blue-700">+18.4%</div>
+        <div class="text-xs text-slate-400">Portfolio Gain</div>
       </div>
-      <div class="absolute -bottom-4 -left-6 floating-widget">
-        <div class="glass-strong rounded-xl p-3 text-center glow-purple min-w-32">
-          <div class="text-xs text-slate-400">AI Confidence</div>
-          <div class="flex items-center gap-1 mt-1">
-            <div class="h-1.5 bg-purple-500 rounded-full flex-1"></div>
-            <div class="h-1.5 bg-purple-500 rounded-full flex-1"></div>
-            <div class="h-1.5 bg-purple-500 rounded-full flex-1"></div>
-            <div class="h-1.5 bg-slate-700 rounded-full flex-1"></div>
-          </div>
-          <div class="text-xs font-bold text-purple-400 mt-1">82% High</div>
+      <div class="absolute -bottom-4 -left-6 card p-3 shadow-lg float-anim-3">
+        <div class="flex items-center gap-2">
+          <div class="w-2 h-2 rounded-full bg-emerald-500 pulse-dot"></div>
+          <span class="text-xs text-slate-600 font-medium">Risk Score: Low</span>
         </div>
-      </div>
-      <div class="absolute top-1/2 -right-10 floating-widget" style="animation-delay: 0.8s;">
-        <div class="glass-strong rounded-xl p-3 text-center min-w-28">
-          <div class="text-xs text-slate-400">Sentiment</div>
-          <div class="text-lg mt-1">😤</div>
-          <div class="text-xs font-bold text-yellow-400">Bullish</div>
-        </div>
+        <div class="text-lg font-bold text-emerald-600 mt-1">18 / 100</div>
       </div>
     </div>
+
   </div>
 </section>
 
-<!-- ===== STATS COUNTERS ===== -->
-<section class="relative z-10 py-16 border-y" style="border-color: var(--border);">
-  <div class="max-w-6xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-    <div class="reveal">
-      <div class="text-4xl font-bold gradient-text counter" data-target="500">0</div>
-      <div class="text-sm text-slate-500 mt-2">+</div>
-      <div class="text-slate-400 text-sm mt-1">Stocks Covered</div>
+<!-- ===== STATS ===== -->
+<section class="bg-white border-y py-12" style="border-color:var(--slate-200);">
+  <div class="max-w-5xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-0 text-center divide-x divide-slate-200">
+    <div class="px-6 reveal">
+      <div class="text-4xl font-extrabold text-blue-700 counter" data-target="500">0</div>
+      <div class="text-xs text-slate-400 mt-1 uppercase tracking-wider">Stocks Covered</div>
     </div>
-    <div class="reveal" style="transition-delay:0.1s">
-      <div class="text-4xl font-bold gradient-text counter" data-target="98">0</div>
-      <div class="text-sm text-slate-500 mt-2">%</div>
-      <div class="text-slate-400 text-sm mt-1">Model Accuracy</div>
+    <div class="px-6 reveal" style="transition-delay:0.1s">
+      <div class="text-4xl font-extrabold text-blue-700 counter" data-target="98">0</div><span class="text-xl font-bold text-blue-700">%</span>
+      <div class="text-xs text-slate-400 mt-1 uppercase tracking-wider">Prediction Accuracy</div>
     </div>
-    <div class="reveal" style="transition-delay:0.2s">
-      <div class="text-4xl font-bold gradient-text counter" data-target="50">0</div>
-      <div class="text-sm text-slate-500 mt-2">K+</div>
-      <div class="text-slate-400 text-sm mt-1">Predictions Made</div>
+    <div class="px-6 reveal" style="transition-delay:0.2s">
+      <div class="text-4xl font-extrabold text-blue-700 counter" data-target="50">0</div><span class="text-xl font-bold text-blue-700">K+</span>
+      <div class="text-xs text-slate-400 mt-1 uppercase tracking-wider">Analyses Made</div>
     </div>
-    <div class="reveal" style="transition-delay:0.3s">
-      <div class="text-4xl font-bold gradient-text">24</div>
-      <div class="text-sm text-slate-500 mt-2">/7</div>
-      <div class="text-slate-400 text-sm mt-1">Live Data</div>
+    <div class="px-6 reveal" style="transition-delay:0.3s">
+      <div class="text-4xl font-extrabold text-blue-700">24/7</div>
+      <div class="text-xs text-slate-400 mt-1 uppercase tracking-wider">Live Intelligence</div>
     </div>
   </div>
 </section>
 
 <!-- ===== FEATURES ===== -->
-<section id="features" class="relative z-10 py-24 px-4 max-w-7xl mx-auto">
+<section id="features" class="py-24 px-4 max-w-7xl mx-auto">
   <div class="text-center mb-16 reveal">
-    <div class="inline-flex items-center gap-2 glass px-4 py-2 rounded-full text-xs font-medium text-cyan mb-4">⚡ Platform Features</div>
-    <h2 class="text-4xl font-bold text-white mb-4">Everything You Need to <span class="gradient-text">Trade Smarter</span></h2>
-    <p class="text-slate-400 max-w-xl mx-auto">From real-time predictions to AI-powered insights — all in one intelligent platform.</p>
+    <div class="badge badge-blue w-fit mx-auto mb-4">⚡ Platform Features</div>
+    <h2 class="text-4xl font-extrabold text-slate-800 mb-4">Everything You Need to <span class="gradient-text">Trade Smarter</span></h2>
+    <p class="text-slate-500 max-w-xl mx-auto">Six powerful modules working together — from LSTM predictions to AI risk detection and portfolio intelligence.</p>
   </div>
-
   <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-    <div class="glass feature-card rounded-2xl p-6 reveal" style="transition-delay:0.05s">
-      <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-2xl mb-4">🤖</div>
-      <h3 class="text-white font-semibold text-lg mb-2">LSTM Neural Network</h3>
-      <p class="text-slate-400 text-sm leading-relaxed">Deep learning model trained on years of price data to predict future stock movements with high accuracy.</p>
+    <a href="/prediction" class="card card-hover p-6 reveal block" style="transition-delay:0.05s">
+      <div class="feat-icon bg-blue-50 mb-4">🤖</div>
+      <h3 class="font-bold text-slate-800 text-lg mb-2">LSTM Stock Predictions</h3>
+      <p class="text-slate-500 text-sm leading-relaxed">Deep learning trained on years of price data predicts future movements with high accuracy. Get Buy/Sell/Hold signals instantly.</p>
+      <div class="text-blue-700 text-sm font-semibold mt-4">Predict Now →</div>
+    </a>
+    <a href="/risk" class="card card-hover p-6 reveal block" style="transition-delay:0.1s">
+      <div class="feat-icon bg-red-50 mb-4">🛡</div>
+      <h3 class="font-bold text-slate-800 text-lg mb-2">Smart Risk Radar</h3>
+      <p class="text-slate-500 text-sm leading-relaxed">Real-time AI detection of volatility spikes, pump-and-dump schemes, whale activity, and market manipulation patterns.</p>
+      <div class="text-blue-700 text-sm font-semibold mt-4">View Risk Radar →</div>
+    </a>
+    <a href="/portfolio" class="card card-hover p-6 reveal block" style="transition-delay:0.15s">
+      <div class="feat-icon bg-purple-50 mb-4">💼</div>
+      <h3 class="font-bold text-slate-800 text-lg mb-2">Portfolio Intelligence</h3>
+      <p class="text-slate-500 text-sm leading-relaxed">AI-powered portfolio health scoring, diversification analysis, risk-to-reward engine, and wealth projection forecasts.</p>
+      <div class="text-blue-700 text-sm font-semibold mt-4">Manage Portfolio →</div>
+    </a>
+    <a href="/sentiment" class="card card-hover p-6 reveal block" style="transition-delay:0.2s">
+      <div class="feat-icon bg-green-50 mb-4">🧠</div>
+      <h3 class="font-bold text-slate-800 text-lg mb-2">Market Sentiment AI</h3>
+      <p class="text-slate-500 text-sm leading-relaxed">Fear & Greed index, emotion meters, sentiment heatmap, and 30-day trend analysis powered by AI signal processing.</p>
+      <div class="text-blue-700 text-sm font-semibold mt-4">View Sentiment →</div>
+    </a>
+    <div class="card card-hover p-6 reveal" style="transition-delay:0.25s">
+      <div class="feat-icon bg-amber-50 mb-4">💬</div>
+      <h3 class="font-bold text-slate-800 text-lg mb-2">AI Trading Copilot</h3>
+      <p class="text-slate-500 text-sm leading-relaxed">GPT-4 powered assistant answers your stock questions — from buy/sell decisions to risk analysis and strategy comparison.</p>
+      <div class="text-blue-700 text-sm font-semibold mt-4">Try Copilot →</div>
     </div>
-
-    <div class="glass feature-card rounded-2xl p-6 reveal" style="transition-delay:0.1s">
-      <div class="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-2xl mb-4">💬</div>
-      <h3 class="text-white font-semibold text-lg mb-2">AI Trading Copilot</h3>
-      <p class="text-slate-400 text-sm leading-relaxed">Ask anything about stocks. Get technical analysis, risk assessments, and buy/sell insights from GPT-4.</p>
+    <div class="card card-hover p-6 reveal" style="transition-delay:0.3s">
+      <div class="feat-icon bg-blue-50 mb-4">📊</div>
+      <h3 class="font-bold text-slate-800 text-lg mb-2">Technical Analysis</h3>
+      <p class="text-slate-500 text-sm leading-relaxed">EMA 20/50/100/200, RSI, MACD — all calculated live from Yahoo Finance. Dark chart overlays with prediction vs actual comparison.</p>
+      <div class="text-blue-700 text-sm font-semibold mt-4">Analyze →</div>
     </div>
-
-    <div class="glass feature-card rounded-2xl p-6 reveal" style="transition-delay:0.15s">
-      <div class="w-12 h-12 rounded-xl bg-green-500/10 border border-green-500/20 flex items-center justify-center text-2xl mb-4">🧠</div>
-      <h3 class="text-white font-semibold text-lg mb-2">Market Sentiment AI</h3>
-      <p class="text-slate-400 text-sm leading-relaxed">Real-time emotion analysis — Fear, Greed, Bullish, Bearish gauges powered by market data signals.</p>
-    </div>
-
-    <div class="glass feature-card rounded-2xl p-6 reveal" style="transition-delay:0.2s">
-      <div class="w-12 h-12 rounded-xl bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center text-2xl mb-4">📊</div>
-      <h3 class="text-white font-semibold text-lg mb-2">Technical Indicators</h3>
-      <p class="text-slate-400 text-sm leading-relaxed">EMA 20/50/100/200, RSI, MACD — all calculated live from real Yahoo Finance price data.</p>
-    </div>
-
-    <div class="glass feature-card rounded-2xl p-6 reveal" style="transition-delay:0.25s">
-      <div class="w-12 h-12 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-2xl mb-4">⚡</div>
-      <h3 class="text-white font-semibold text-lg mb-2">Instant Predictions</h3>
-      <p class="text-slate-400 text-sm leading-relaxed">Results in seconds. Enter any NSE, BSE, or US stock symbol and get a full prediction report instantly.</p>
-    </div>
-
-    <div class="glass feature-card rounded-2xl p-6 reveal" style="transition-delay:0.3s">
-      <div class="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-2xl mb-4">📥</div>
-      <h3 class="text-white font-semibold text-lg mb-2">Data Export</h3>
-      <p class="text-slate-400 text-sm leading-relaxed">Download full historical datasets as CSV for your own research and backtesting workflows.</p>
-    </div>
-
   </div>
 </section>
 
 <!-- ===== HOW IT WORKS ===== -->
-<section id="how-it-works" class="relative z-10 py-24 px-4" style="background: rgba(0,212,255,0.02); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+<section id="how-it-works" class="bg-white py-24 px-4 border-y" style="border-color:var(--slate-200);">
   <div class="max-w-5xl mx-auto">
     <div class="text-center mb-16 reveal">
-      <div class="inline-flex items-center gap-2 glass px-4 py-2 rounded-full text-xs font-medium text-cyan mb-4">🎯 Process</div>
-      <h2 class="text-4xl font-bold text-white mb-4">How It <span class="gradient-text">Works</span></h2>
+      <div class="badge badge-blue w-fit mx-auto mb-4">🎯 Simple Process</div>
+      <h2 class="text-4xl font-extrabold text-slate-800">How It <span class="gradient-text">Works</span></h2>
     </div>
-
-    <div class="grid md:grid-cols-3 gap-8">
+    <div class="grid md:grid-cols-3 gap-10">
       <div class="text-center reveal" style="transition-delay:0.05s">
-        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-cyan-500/5 border border-cyan-500/20 flex items-center justify-center text-3xl mx-auto mb-4 glow-cyan">1</div>
-        <h3 class="text-white font-semibold text-lg mb-2">Enter Stock Symbol</h3>
-        <p class="text-slate-400 text-sm">Type any stock ticker like RELIANCE.NS, AAPL, TSLA, or choose from popular suggestions.</p>
+        <div class="step-num">1</div>
+        <h3 class="font-bold text-slate-800 text-lg mb-2">Enter a Stock</h3>
+        <p class="text-slate-500 text-sm">Type any NSE, BSE, or US ticker. Our AI instantly fetches live data from Yahoo Finance.</p>
       </div>
       <div class="text-center reveal" style="transition-delay:0.1s">
-        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500/20 to-purple-500/5 border border-purple-500/20 flex items-center justify-center text-3xl mx-auto mb-4 glow-purple">2</div>
-        <h3 class="text-white font-semibold text-lg mb-2">AI Processes Data</h3>
-        <p class="text-slate-400 text-sm">Our LSTM model fetches real-time data, runs predictions, and computes all technical indicators.</p>
+        <div class="step-num">2</div>
+        <h3 class="font-bold text-slate-800 text-lg mb-2">AI Analyzes</h3>
+        <p class="text-slate-500 text-sm">LSTM model runs prediction, calculates RSI/MACD/EMA, scores risk, and generates insights in seconds.</p>
       </div>
       <div class="text-center reveal" style="transition-delay:0.15s">
-        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-green-500/20 to-green-500/5 border border-green-500/20 flex items-center justify-center text-3xl mx-auto mb-4 glow-green">3</div>
-        <h3 class="text-white font-semibold text-lg mb-2">Get Your Signal</h3>
-        <p class="text-slate-400 text-sm">Receive a clear BUY / SELL / HOLD recommendation with confidence score and detailed reasoning.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ===== AI COPILOT TEASER ===== -->
-<section class="relative z-10 py-24 px-4 max-w-7xl mx-auto">
-  <div class="grid lg:grid-cols-2 gap-16 items-center">
-    <div class="reveal-left">
-      <div class="inline-flex items-center gap-2 glass px-4 py-2 rounded-full text-xs font-medium text-purple-400 mb-6">💬 AI Copilot</div>
-      <h2 class="text-4xl font-bold text-white mb-4">Your Personal <span class="gradient-text">AI Financial Advisor</span></h2>
-      <p class="text-slate-400 leading-relaxed mb-6">Ask anything — from stock comparisons to risk assessments. The AI Copilot understands context and gives you smart, actionable insights backed by real market data.</p>
-      <div class="space-y-3 mb-8">
-        <div class="flex items-center gap-3 text-sm text-slate-300">
-          <span class="text-purple-400">→</span> "Should I invest in Tesla today?"
-        </div>
-        <div class="flex items-center gap-3 text-sm text-slate-300">
-          <span class="text-purple-400">→</span> "Compare Infosys vs TCS this quarter"
-        </div>
-        <div class="flex items-center gap-3 text-sm text-slate-300">
-          <span class="text-purple-400">→</span> "What is the safest Indian large-cap this week?"
-        </div>
-      </div>
-      <a href="/prediction" class="btn-primary px-6 py-3 rounded-xl text-sm font-semibold inline-flex items-center gap-2">
-        <span>Try AI Copilot →</span>
-      </a>
-    </div>
-    <div class="reveal-right hidden lg:block">
-      <!-- Chat UI mockup -->
-      <div class="glass-strong rounded-2xl overflow-hidden glow-purple">
-        <div class="flex items-center gap-2 px-4 py-3 border-b" style="border-color: var(--border);">
-          <div class="w-2 h-2 rounded-full bg-red-500"></div>
-          <div class="w-2 h-2 rounded-full bg-yellow-500"></div>
-          <div class="w-2 h-2 rounded-full bg-green-500"></div>
-          <span class="text-xs text-slate-400 ml-2">StockSense AI Copilot</span>
-        </div>
-        <div class="p-4 space-y-4 min-h-72">
-          <div class="flex gap-3">
-            <div class="w-7 h-7 rounded-full bg-gradient-to-br from-purple-500 to-cyan-500 flex-shrink-0 text-xs flex items-center justify-center font-bold">AI</div>
-            <div class="glass rounded-xl rounded-tl-none p-3 text-sm text-slate-300 max-w-xs">
-              Hello! I'm your AI Trading Copilot. Ask me anything about stocks, markets, or investment strategies.
-            </div>
-          </div>
-          <div class="flex gap-3 flex-row-reverse">
-            <div class="w-7 h-7 rounded-full bg-slate-700 flex-shrink-0 text-xs flex items-center justify-center">U</div>
-            <div class="bg-cyan-500/10 border border-cyan-500/20 rounded-xl rounded-tr-none p-3 text-sm text-slate-300 max-w-xs">
-              Should I buy Reliance Industries right now?
-            </div>
-          </div>
-          <div class="flex gap-3">
-            <div class="w-7 h-7 rounded-full bg-gradient-to-br from-purple-500 to-cyan-500 flex-shrink-0 text-xs flex items-center justify-center font-bold">AI</div>
-            <div class="glass rounded-xl rounded-tl-none p-3 text-sm text-slate-300 max-w-xs">
-              Based on current technicals, Reliance shows <span class="text-green-400 font-semibold">bullish momentum</span>. EMA 20 is above EMA 50, RSI at 58 (neutral-bullish). <span class="text-cyan font-semibold">Recommendation: BUY with Medium confidence</span>. Set stop-loss at ₹2,750.
-            </div>
-          </div>
-          <div class="flex items-center gap-2 mt-4">
-            <div class="flex-1 glass rounded-xl px-3 py-2 text-xs text-slate-500">Ask about any stock...</div>
-            <div class="w-7 h-7 rounded-xl bg-gradient-to-br from-cyan-500 to-purple-500 flex items-center justify-center text-xs">↑</div>
-          </div>
-        </div>
+        <div class="step-num">3</div>
+        <h3 class="font-bold text-slate-800 text-lg mb-2">Act Confidently</h3>
+        <p class="text-slate-500 text-sm">Receive a clear BUY/SELL/HOLD signal, confidence score, risk rating, and AI copilot explanation.</p>
       </div>
     </div>
   </div>
 </section>
 
 <!-- ===== TESTIMONIALS ===== -->
-<section id="testimonials" class="relative z-10 py-24 px-4" style="background: rgba(124,58,237,0.03); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
-  <div class="max-w-6xl mx-auto">
-    <div class="text-center mb-16 reveal">
-      <h2 class="text-4xl font-bold text-white mb-4">What <span class="gradient-text">Traders Say</span></h2>
+<section class="py-24 px-4 max-w-6xl mx-auto">
+  <div class="text-center mb-16 reveal">
+    <h2 class="text-4xl font-extrabold text-slate-800">Trusted by <span class="gradient-text">Traders & Investors</span></h2>
+  </div>
+  <div class="grid md:grid-cols-3 gap-6">
+    <div class="card card-hover p-6 reveal" style="transition-delay:0.05s">
+      <div class="flex gap-0.5 text-amber-400 mb-4 text-sm">★★★★★</div>
+      <p class="text-slate-600 text-sm leading-relaxed mb-4">"The Risk Radar caught a potential pump-and-dump on a mid-cap stock that I was about to buy. Saved me from a significant loss."</p>
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-sm">R</div>
+        <div><div class="font-semibold text-slate-800 text-sm">Rahul Sharma</div><div class="text-xs text-slate-400">Portfolio Manager</div></div>
+      </div>
     </div>
-    <div class="grid md:grid-cols-3 gap-6">
-      <div class="glass feature-card rounded-2xl p-6 reveal" style="transition-delay:0.05s">
-        <div class="flex gap-1 mb-4">
-          <span class="text-yellow-400">★★★★★</span>
-        </div>
-        <p class="text-slate-300 text-sm leading-relaxed mb-4">"The AI predictions are impressively accurate. I used it to time my Reliance entry and got a 12% gain in 3 weeks."</p>
-        <div class="flex items-center gap-3">
-          <div class="w-9 h-9 rounded-full bg-gradient-to-br from-cyan-500/30 to-purple-500/30 border border-cyan-500/20 flex items-center justify-center text-sm font-bold">R</div>
-          <div>
-            <div class="text-white text-sm font-medium">Rahul Sharma</div>
-            <div class="text-slate-500 text-xs">Retail Investor, Mumbai</div>
-          </div>
-        </div>
+    <div class="card card-hover p-6 reveal" style="transition-delay:0.1s">
+      <div class="flex gap-0.5 text-amber-400 mb-4 text-sm">★★★★★</div>
+      <p class="text-slate-600 text-sm leading-relaxed mb-4">"The Portfolio Intelligence dashboard is incredible. It showed I was overexposed in tech and recommended rebalancing — spot on."</p>
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-sm">A</div>
+        <div><div class="font-semibold text-slate-800 text-sm">Ananya Verma</div><div class="text-xs text-slate-400">Wealth Analyst</div></div>
       </div>
-      <div class="glass feature-card rounded-2xl p-6 reveal" style="transition-delay:0.1s">
-        <div class="flex gap-1 mb-4">
-          <span class="text-yellow-400">★★★★★</span>
-        </div>
-        <p class="text-slate-300 text-sm leading-relaxed mb-4">"The AI Copilot feels like having a professional analyst on call 24/7. It explained the MACD signals so clearly."</p>
-        <div class="flex items-center gap-3">
-          <div class="w-9 h-9 rounded-full bg-gradient-to-br from-green-500/30 to-cyan-500/30 border border-green-500/20 flex items-center justify-center text-sm font-bold">A</div>
-          <div>
-            <div class="text-white text-sm font-medium">Ananya Verma</div>
-            <div class="text-slate-500 text-xs">Day Trader, Bangalore</div>
-          </div>
-        </div>
-      </div>
-      <div class="glass feature-card rounded-2xl p-6 reveal" style="transition-delay:0.15s">
-        <div class="flex gap-1 mb-4">
-          <span class="text-yellow-400">★★★★☆</span>
-        </div>
-        <p class="text-slate-300 text-sm leading-relaxed mb-4">"I'm a complete beginner and this platform made stock investing simple to understand. The visual charts are fantastic."</p>
-        <div class="flex items-center gap-3">
-          <div class="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500/30 to-red-500/30 border border-purple-500/20 flex items-center justify-center text-sm font-bold">K</div>
-          <div>
-            <div class="text-white text-sm font-medium">Karan Mehta</div>
-            <div class="text-slate-500 text-xs">Student Investor, Delhi</div>
-          </div>
-        </div>
+    </div>
+    <div class="card card-hover p-6 reveal" style="transition-delay:0.15s">
+      <div class="flex gap-0.5 text-amber-400 mb-4 text-sm">★★★★☆</div>
+      <p class="text-slate-600 text-sm leading-relaxed mb-4">"As a beginner investor, the AI Copilot explained every technical indicator in plain English. I finally understand what RSI means!"</p>
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-full bg-purple-100 flex items-center justify-center text-purple-700 font-bold text-sm">K</div>
+        <div><div class="font-semibold text-slate-800 text-sm">Karan Mehta</div><div class="text-xs text-slate-400">Student Investor</div></div>
       </div>
     </div>
   </div>
 </section>
 
 <!-- ===== FAQ ===== -->
-<section id="faq" class="relative z-10 py-24 px-4 max-w-3xl mx-auto">
-  <div class="text-center mb-16 reveal">
-    <h2 class="text-4xl font-bold text-white mb-4">Frequently Asked <span class="gradient-text">Questions</span></h2>
-  </div>
-  <div class="space-y-3 reveal">
-    <div class="glass rounded-xl overflow-hidden faq-item">
-      <button onclick="toggleFaq(this)" class="w-full text-left px-6 py-4 flex justify-between items-center">
-        <span class="font-medium text-white">Can I trust the AI predictions?</span>
-        <span class="faq-icon text-slate-400 text-xl font-light">+</span>
-      </button>
-      <div class="faq-answer px-6 pb-4 text-slate-400 text-sm leading-relaxed">
-        Our LSTM model is trained on extensive historical data and achieves strong backtested accuracy. However, stock markets are inherently unpredictable — always use predictions as one input among many and never invest more than you can afford to lose.
-      </div>
+<section id="faq" class="bg-white py-24 px-4 border-t" style="border-color:var(--slate-200);">
+  <div class="max-w-3xl mx-auto">
+    <div class="text-center mb-16 reveal">
+      <h2 class="text-4xl font-extrabold text-slate-800">Frequently Asked <span class="gradient-text">Questions</span></h2>
     </div>
-    <div class="glass rounded-xl overflow-hidden faq-item">
-      <button onclick="toggleFaq(this)" class="w-full text-left px-6 py-4 flex justify-between items-center">
-        <span class="font-medium text-white">Which stocks are supported?</span>
-        <span class="faq-icon text-slate-400 text-xl font-light">+</span>
-      </button>
-      <div class="faq-answer px-6 pb-4 text-slate-400 text-sm leading-relaxed">
-        Any stock available on Yahoo Finance — NSE stocks (e.g., RELIANCE.NS), BSE stocks (e.g., RELIANCE.BO), US stocks (AAPL, TSLA, GOOGL), and most global markets.
+    <div class="space-y-3 reveal">
+      <div class="card overflow-hidden">
+        <button onclick="toggleFaq(this)" class="w-full text-left px-6 py-4 flex justify-between items-center font-semibold text-slate-800 text-sm">Can I trust the AI predictions?<span class="faq-icon text-slate-400 text-lg">+</span></button>
+        <div class="faq-answer px-6 pb-4 text-slate-500 text-sm leading-relaxed">Our LSTM model achieves strong backtested accuracy on historical data. Treat predictions as one input among many — always apply your own judgment and risk management.</div>
       </div>
-    </div>
-    <div class="glass rounded-xl overflow-hidden faq-item">
-      <button onclick="toggleFaq(this)" class="w-full text-left px-6 py-4 flex justify-between items-center">
-        <span class="font-medium text-white">What is the AI Copilot?</span>
-        <span class="faq-icon text-slate-400 text-xl font-light">+</span>
-      </button>
-      <div class="faq-answer px-6 pb-4 text-slate-400 text-sm leading-relaxed">
-        The AI Copilot is a GPT-4 powered chat assistant built into the prediction dashboard. You can ask it stock-specific questions, request comparisons, or get plain-English explanations of technical signals.
+      <div class="card overflow-hidden">
+        <button onclick="toggleFaq(this)" class="w-full text-left px-6 py-4 flex justify-between items-center font-semibold text-slate-800 text-sm">What is the Smart Risk Radar?<span class="faq-icon text-slate-400 text-lg">+</span></button>
+        <div class="faq-answer px-6 pb-4 text-slate-500 text-sm leading-relaxed">An AI engine that scores every stock from 0–100 for risk, detecting volatility spikes, volume anomalies, pump-and-dump patterns, whale activity, and momentum traps in real time.</div>
       </div>
-    </div>
-    <div class="glass rounded-xl overflow-hidden faq-item">
-      <button onclick="toggleFaq(this)" class="w-full text-left px-6 py-4 flex justify-between items-center">
-        <span class="font-medium text-white">Is it free to use?</span>
-        <span class="faq-icon text-slate-400 text-xl font-light">+</span>
-      </button>
-      <div class="faq-answer px-6 pb-4 text-slate-400 text-sm leading-relaxed">
-        Yes, all core features including stock predictions, technical analysis, and the AI Copilot are completely free.
+      <div class="card overflow-hidden">
+        <button onclick="toggleFaq(this)" class="w-full text-left px-6 py-4 flex justify-between items-center font-semibold text-slate-800 text-sm">How does Portfolio Intelligence work?<span class="faq-icon text-slate-400 text-lg">+</span></button>
+        <div class="faq-answer px-6 pb-4 text-slate-500 text-sm leading-relaxed">It analyzes your portfolio composition for diversification quality, sector balance, risk exposure, and generates a 0–100 health score with AI-powered rebalancing recommendations.</div>
       </div>
-    </div>
-    <div class="glass rounded-xl overflow-hidden faq-item">
-      <button onclick="toggleFaq(this)" class="w-full text-left px-6 py-4 flex justify-between items-center">
-        <span class="font-medium text-white">How fast are results?</span>
-        <span class="faq-icon text-slate-400 text-xl font-light">+</span>
-      </button>
-      <div class="faq-answer px-6 pb-4 text-slate-400 text-sm leading-relaxed">
-        Most predictions complete in 5–15 seconds depending on data fetch speed. The AI Copilot responds in 2–5 seconds.
+      <div class="card overflow-hidden">
+        <button onclick="toggleFaq(this)" class="w-full text-left px-6 py-4 flex justify-between items-center font-semibold text-slate-800 text-sm">Which stocks are supported?<span class="faq-icon text-slate-400 text-lg">+</span></button>
+        <div class="faq-answer px-6 pb-4 text-slate-500 text-sm leading-relaxed">Any stock on Yahoo Finance — NSE (e.g. RELIANCE.NS), BSE (RELIANCE.BO), US markets (AAPL, TSLA, GOOGL, MSFT), and most global exchanges.</div>
+      </div>
+      <div class="card overflow-hidden">
+        <button onclick="toggleFaq(this)" class="w-full text-left px-6 py-4 flex justify-between items-center font-semibold text-slate-800 text-sm">Is it free?<span class="faq-icon text-slate-400 text-lg">+</span></button>
+        <div class="faq-answer px-6 pb-4 text-slate-500 text-sm leading-relaxed">Yes — all features including predictions, risk radar, portfolio intelligence, market sentiment, and AI copilot are completely free.</div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ===== CTA BANNER ===== -->
-<section class="relative z-10 py-20 px-4">
+<!-- ===== CTA ===== -->
+<section class="py-20 px-4">
   <div class="max-w-4xl mx-auto reveal">
-    <div class="glass-strong rounded-3xl p-12 text-center glow-cyan" style="background: linear-gradient(135deg, rgba(0,212,255,0.06), rgba(124,58,237,0.06));">
-      <h2 class="text-4xl font-bold text-white mb-4">Ready to Invest <span class="gradient-text">Smarter?</span></h2>
-      <p class="text-slate-400 mb-8 max-w-lg mx-auto">Join thousands of traders using AI to make better investment decisions every day.</p>
-      <a href="/prediction" class="btn-primary px-10 py-4 rounded-2xl text-lg font-semibold inline-block">
-        <span>🚀 Launch the Dashboard</span>
-      </a>
+    <div class="rounded-3xl p-12 text-center text-white" style="background:linear-gradient(135deg,#1d4ed8,#2563eb,#3b82f6);">
+      <h2 class="text-4xl font-extrabold mb-4">Start Investing Smarter Today</h2>
+      <p class="text-blue-100 mb-8 max-w-lg mx-auto">Join thousands of traders using AI-powered intelligence to make better investment decisions.</p>
+      <a href="/prediction" class="inline-block bg-white text-blue-700 font-bold px-10 py-4 rounded-2xl text-lg hover:bg-blue-50 transition-all hover:shadow-xl">🚀 Launch the Dashboard →</a>
     </div>
   </div>
 </section>
 
 <!-- ===== FOOTER ===== -->
-<footer class="relative z-10 border-t py-12 px-4" style="border-color: var(--border);">
-  <div class="max-w-6xl mx-auto grid md:grid-cols-4 gap-8">
+<footer class="bg-slate-900 text-white py-14 px-4">
+  <div class="max-w-6xl mx-auto grid md:grid-cols-4 gap-10">
     <div class="md:col-span-2">
       <div class="flex items-center gap-2 mb-4">
-        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-purple-600 flex items-center justify-center text-sm font-bold">S</div>
-        <span class="text-lg font-bold text-white">StockSense <span class="text-cyan">AI</span></span>
+        <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-sm font-bold">S</div>
+        <span class="font-bold text-white text-lg">StockSense <span class="text-blue-400">AI</span></span>
       </div>
-      <p class="text-slate-400 text-sm leading-relaxed max-w-xs">AI-powered stock intelligence platform. Not financial advice. Always do your own research.</p>
+      <p class="text-slate-400 text-sm leading-relaxed max-w-xs">AI-powered stock intelligence platform. Not financial advice — always do your own research.</p>
     </div>
     <div>
-      <h4 class="text-white font-semibold mb-4 text-sm">Platform</h4>
+      <h4 class="font-semibold text-slate-300 mb-4 text-sm uppercase tracking-wider">Platform</h4>
       <ul class="space-y-2 text-sm text-slate-400">
-        <li><a href="/prediction" class="hover:text-cyan transition-colors">Prediction Dashboard</a></li>
-        <li><a href="/sentiment" class="hover:text-cyan transition-colors">Market Sentiment</a></li>
-        <li><a href="#features" class="hover:text-cyan transition-colors">Features</a></li>
+        <li><a href="/prediction" class="hover:text-blue-400 transition-colors">Prediction</a></li>
+        <li><a href="/risk" class="hover:text-blue-400 transition-colors">Risk Radar</a></li>
+        <li><a href="/portfolio" class="hover:text-blue-400 transition-colors">Portfolio</a></li>
+        <li><a href="/sentiment" class="hover:text-blue-400 transition-colors">Sentiment</a></li>
       </ul>
     </div>
     <div>
-      <h4 class="text-white font-semibold mb-4 text-sm">Info</h4>
+      <h4 class="font-semibold text-slate-300 mb-4 text-sm uppercase tracking-wider">Info</h4>
       <ul class="space-y-2 text-sm text-slate-400">
-        <li><a href="#faq" class="hover:text-cyan transition-colors">FAQ</a></li>
-        <li><a href="#how-it-works" class="hover:text-cyan transition-colors">How It Works</a></li>
-        <li><span class="text-slate-500">support@stocksense.ai</span></li>
+        <li><a href="#faq" class="hover:text-blue-400 transition-colors">FAQ</a></li>
+        <li><a href="#how-it-works" class="hover:text-blue-400 transition-colors">How It Works</a></li>
+        <li class="text-slate-500">support@stocksense.ai</li>
       </ul>
     </div>
   </div>
-  <div class="max-w-6xl mx-auto mt-10 pt-6 border-t flex flex-col md:flex-row justify-between items-center gap-4" style="border-color: var(--border);">
-    <p class="text-slate-500 text-xs">© 2026 StockSense AI — For educational purposes only.</p>
-    <p class="text-slate-600 text-xs">Powered by TensorFlow, Yahoo Finance & OpenAI</p>
+  <div class="max-w-6xl mx-auto mt-10 pt-6 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4">
+    <p class="text-slate-500 text-xs">© 2026 StockSense AI — Educational use only.</p>
+    <p class="text-slate-600 text-xs">Powered by TensorFlow · Yahoo Finance · OpenAI GPT-4</p>
   </div>
 </footer>
 
 <script>
-// Mobile menu
-function toggleMobileMenu() {
-  document.getElementById('mobile-menu').classList.toggle('open');
-}
+// Reveal
+const obs = new IntersectionObserver(e => e.forEach(x => { if(x.isIntersecting) x.target.classList.add('visible'); }), {threshold:0.1});
+document.querySelectorAll('.reveal,.reveal-l,.reveal-r').forEach(el => obs.observe(el));
 
-// Scroll reveal
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
-}, { threshold: 0.1 });
-document.querySelectorAll('.reveal, .reveal-left, .reveal-right').forEach(el => observer.observe(el));
-
-// Counter animation
+// Counter
 function animateCounter(el) {
-  const target = parseInt(el.dataset.target);
-  const duration = 2000;
-  const step = target / (duration / 16);
-  let current = 0;
-  const timer = setInterval(() => {
-    current = Math.min(current + step, target);
-    el.textContent = Math.floor(current);
-    if (current >= target) clearInterval(timer);
-  }, 16);
+  const t = parseInt(el.dataset.target); const dur=2000; const step=t/(dur/16); let cur=0;
+  const tm = setInterval(() => { cur=Math.min(cur+step,t); el.textContent=Math.floor(cur); if(cur>=t) clearInterval(tm); }, 16);
 }
-const counterObserver = new IntersectionObserver((entries) => {
-  entries.forEach(e => { if (e.isIntersecting) { animateCounter(e.target); counterObserver.unobserve(e.target); } });
-}, { threshold: 0.5 });
-document.querySelectorAll('.counter').forEach(el => counterObserver.observe(el));
+const cObs = new IntersectionObserver(e => e.forEach(x => { if(x.isIntersecting){animateCounter(x.target);cObs.unobserve(x.target);} }), {threshold:0.5});
+document.querySelectorAll('.counter').forEach(el => cObs.observe(el));
 
 // FAQ
 function toggleFaq(btn) {
-  const answer = btn.nextElementSibling;
-  const icon = btn.querySelector('.faq-icon');
-  const isOpen = answer.classList.contains('open');
-  // close all
-  document.querySelectorAll('.faq-answer').forEach(a => a.classList.remove('open'));
-  document.querySelectorAll('.faq-icon').forEach(i => i.classList.remove('open'));
-  if (!isOpen) { answer.classList.add('open'); icon.classList.add('open'); }
+  const a = btn.nextElementSibling, i = btn.querySelector('.faq-icon'), open = a.classList.contains('open');
+  document.querySelectorAll('.faq-answer').forEach(x => x.classList.remove('open'));
+  document.querySelectorAll('.faq-icon').forEach(x => x.classList.remove('open'));
+  if(!open){a.classList.add('open');i.classList.add('open');}
 }
 </script>
 </body>

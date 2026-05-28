@@ -5,208 +5,152 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>StockSense AI — Prediction Dashboard</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --cyan:#00d4ff; --purple:#7c3aed; --green:#10b981; --red:#ef4444;
-    --yellow:#f59e0b; --bg:#050b14; --card:rgba(255,255,255,0.03);
-    --border:rgba(0,212,255,0.12); --sidebar:rgba(5,11,20,0.95);
-  }
+  :root { --blue-700:#1d4ed8; --blue-600:#2563eb; --blue-500:#3b82f6; --blue-50:#eff6ff; --blue-100:#dbeafe; --slate-800:#1e293b; --slate-600:#475569; --slate-400:#94a3b8; --slate-200:#e2e8f0; --slate-100:#f1f5f9; }
   *{box-sizing:border-box;margin:0;padding:0;}
   html{scroll-behavior:smooth;}
-  body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:#e2e8f0;overflow-x:hidden;}
-  .bg-mesh{position:fixed;inset:0;z-index:0;pointer-events:none;
-    background:radial-gradient(ellipse 70% 50% at 15% 20%,rgba(0,212,255,0.05) 0%,transparent 60%),
-              radial-gradient(ellipse 60% 70% at 85% 75%,rgba(124,58,237,0.06) 0%,transparent 60%);}
-  .dot-grid{background-image:radial-gradient(rgba(0,212,255,0.06) 1px,transparent 1px);background-size:28px 28px;}
-  .glass{background:var(--card);border:1px solid var(--border);backdrop-filter:blur(16px);}
-  .glass-strong{background:rgba(255,255,255,0.04);border:1px solid rgba(0,212,255,0.18);backdrop-filter:blur(20px);}
-  .gradient-text{background:linear-gradient(135deg,#00d4ff,#7c3aed 50%,#10b981);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-  .text-cyan{color:var(--cyan);}
-  .glow-cyan{box-shadow:0 0 25px rgba(0,212,255,0.12);}
-  .glow-green{box-shadow:0 0 20px rgba(16,185,129,0.15);}
-  .glow-red{box-shadow:0 0 20px rgba(239,68,68,0.15);}
+  body{font-family:'Inter',sans-serif;background:#f8fafc;color:var(--slate-800);}
+  .nav-glass{background:rgba(255,255,255,0.96);backdrop-filter:blur(16px);border-bottom:1px solid var(--slate-200);}
+  .card{background:white;border:1px solid var(--slate-200);border-radius:16px;box-shadow:0 1px 4px rgba(0,0,0,0.06);}
+  .card-blue{background:var(--blue-50);border:1px solid var(--blue-100);border-radius:16px;}
+  .card-hover{transition:all 0.2s;}
+  .card-hover:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.1);}
+  .gradient-text{background:linear-gradient(135deg,var(--blue-700),var(--blue-500));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 
   /* Sidebar */
-  .sidebar{width:220px;min-height:100vh;background:var(--sidebar);border-right:1px solid var(--border);
-    position:fixed;left:0;top:0;z-index:50;display:flex;flex-direction:column;transition:transform 0.3s;}
-  .sidebar-link{display:flex;align-items:center;gap:10px;padding:10px 16px;border-radius:10px;
-    font-size:13px;color:#64748b;transition:all 0.2s;cursor:pointer;}
-  .sidebar-link:hover,.sidebar-link.active{background:rgba(0,212,255,0.08);color:#e2e8f0;border:1px solid rgba(0,212,255,0.12);}
-  .sidebar-link.active{color:var(--cyan);}
-  .main-content{margin-left:220px;min-height:100vh;}
+  .sidebar{width:220px;min-height:100vh;background:white;border-right:1px solid var(--slate-200);position:fixed;left:0;top:0;z-index:50;display:flex;flex-direction:column;}
+  .sidebar-link{display:flex;align-items:center;gap:10px;padding:9px 14px;border-radius:10px;font-size:13px;font-weight:500;color:var(--slate-600);transition:all 0.15s;text-decoration:none;}
+  .sidebar-link:hover,.sidebar-link.active{background:var(--blue-50);color:var(--blue-700);}
+  .sidebar-link.active{font-weight:600;}
+  .main-content{margin-left:220px;}
 
   /* Input */
-  .dark-input{background:rgba(255,255,255,0.04);border:1px solid var(--border);color:#e2e8f0;
-    border-radius:12px;padding:14px 18px;font-family:'Space Grotesk',sans-serif;font-size:14px;
-    width:100%;outline:none;transition:all 0.3s;}
-  .dark-input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,212,255,0.1);}
-  .dark-input::placeholder{color:#475569;}
+  .search-input{background:white;border:1.5px solid var(--slate-200);color:var(--slate-800);border-radius:12px;padding:13px 18px 13px 44px;font-family:'Inter',sans-serif;font-size:14px;width:100%;outline:none;transition:all 0.2s;}
+  .search-input:focus{border-color:var(--blue-500);box-shadow:0 0 0 3px rgba(59,130,246,0.12);}
 
   /* Dropdown */
-  .stock-dropdown{position:absolute;top:calc(100% + 8px);left:0;right:0;background:#0d1117;
-    border:1px solid var(--border);border-radius:14px;z-index:200;overflow:hidden;
-    box-shadow:0 20px 60px rgba(0,0,0,0.6);}
-  .stock-opt{padding:11px 16px;font-size:13px;color:#94a3b8;cursor:pointer;
-    display:flex;align-items:center;justify-content:space-between;transition:background 0.15s;}
-  .stock-opt:hover{background:rgba(0,212,255,0.07);color:#e2e8f0;}
-  .stock-opt .tag{font-size:10px;padding:2px 8px;border-radius:20px;background:rgba(0,212,255,0.1);color:var(--cyan);}
+  .stock-dropdown{position:absolute;top:calc(100% + 6px);left:0;right:0;background:white;border:1px solid var(--slate-200);border-radius:14px;z-index:200;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,0.12);}
+  .stock-opt{padding:10px 14px;font-size:13px;color:var(--slate-600);cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:background 0.12s;}
+  .stock-opt:hover{background:var(--blue-50);color:var(--blue-700);}
+  .stock-tag{font-size:10px;padding:2px 7px;border-radius:20px;background:var(--blue-50);color:var(--blue-700);border:1px solid var(--blue-100);}
 
-  /* Button */
-  .btn-primary{background:linear-gradient(135deg,#00d4ff,#7c3aed);color:white;border:none;
-    cursor:pointer;transition:all 0.3s;font-family:'Space Grotesk',sans-serif;font-weight:600;}
-  .btn-primary:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(0,212,255,0.35);}
+  /* Buttons */
+  .btn-primary{background:var(--blue-700);color:white;border:none;cursor:pointer;transition:all 0.2s;font-family:'Inter',sans-serif;font-weight:600;}
+  .btn-primary:hover{background:var(--blue-600);transform:translateY(-1px);}
   .btn-primary:disabled{opacity:0.6;cursor:not-allowed;transform:none;}
+  .btn-outline{background:white;border:1.5px solid var(--blue-700);color:var(--blue-700);cursor:pointer;font-family:'Inter',sans-serif;font-weight:600;transition:all 0.2s;}
+  .btn-outline:hover{background:var(--blue-50);}
 
-  /* Chart images dark wrapper */
-  .chart-img{width:100%;border-radius:8px;filter:brightness(0.95) saturate(0.9);}
+  /* Badges */
+  .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;}
+  .badge-blue{background:var(--blue-50);color:var(--blue-700);border:1px solid var(--blue-100);}
+  .badge-green{background:#f0fdf4;color:#059669;border:1px solid #bbf7d0;}
+  .badge-red{background:#fef2f2;color:#dc2626;border:1px solid #fecaca;}
+  .badge-amber{background:#fffbeb;color:#d97706;border:1px solid #fde68a;}
 
-  /* RSI gauge */
-  .rsi-bar{height:10px;border-radius:5px;
-    background:linear-gradient(to right,#10b981 0%,#10b981 30%,#f59e0b 30%,#f59e0b 70%,#ef4444 70%);
-    position:relative;}
-  .rsi-needle{position:absolute;top:-4px;width:3px;height:18px;background:white;border-radius:2px;
-    transform:translateX(-50%);transition:left 1s ease;box-shadow:0 0 6px rgba(255,255,255,0.5);}
-
-  /* Rec badge */
-  .rec-buy{background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.3);color:#10b981;}
-  .rec-sell{background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);color:#ef4444;}
-  .rec-hold{background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);color:#f59e0b;}
+  /* Rec cards */
+  .rec-buy{background:#f0fdf4;border:1.5px solid #86efac;color:#059669;}
+  .rec-sell{background:#fef2f2;border:1.5px solid #fca5a5;color:#dc2626;}
+  .rec-hold{background:#fffbeb;border:1.5px solid #fde68a;color:#d97706;}
 
   /* Confidence dots */
-  .conf-dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,0.1);}
-  .conf-dot.filled{background:var(--cyan);}
+  .conf-dot{width:10px;height:10px;border-radius:50%;background:#e2e8f0;}
+  .conf-dot.filled{background:var(--blue-600);}
 
-  /* AI Copilot Chat */
-  #copilotBtn{position:fixed;bottom:28px;right:28px;z-index:100;
-    width:56px;height:56px;border-radius:50%;
-    background:linear-gradient(135deg,#00d4ff,#7c3aed);
-    border:none;cursor:pointer;box-shadow:0 4px 24px rgba(0,212,255,0.4);
-    font-size:24px;transition:all 0.3s;display:flex;align-items:center;justify-content:center;}
-  #copilotBtn:hover{transform:scale(1.08);box-shadow:0 8px 32px rgba(0,212,255,0.55);}
-  #copilotPanel{position:fixed;bottom:96px;right:28px;z-index:99;width:380px;
-    background:#0a1220;border:1px solid rgba(0,212,255,0.2);border-radius:20px;
-    box-shadow:0 24px 80px rgba(0,0,0,0.7);display:none;flex-direction:column;
-    max-height:520px;overflow:hidden;}
+  /* RSI bar */
+  .rsi-track{height:10px;border-radius:5px;background:linear-gradient(to right,#059669 0%,#059669 30%,#f59e0b 30%,#f59e0b 70%,#dc2626 70%);position:relative;}
+  .rsi-needle{position:absolute;top:-5px;width:4px;height:20px;background:var(--slate-800);border-radius:2px;transform:translateX(-50%);transition:left 1s ease;box-shadow:0 0 4px rgba(0,0,0,0.2);}
+
+  /* AI Copilot */
+  #copilotBtn{position:fixed;bottom:28px;right:28px;z-index:100;width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,var(--blue-700),var(--blue-500));border:none;cursor:pointer;box-shadow:0 4px 20px rgba(29,78,216,0.45);font-size:22px;transition:all 0.3s;display:flex;align-items:center;justify-content:center;}
+  #copilotBtn:hover{transform:scale(1.08);box-shadow:0 8px 30px rgba(29,78,216,0.55);}
+  #copilotPanel{position:fixed;bottom:92px;right:28px;z-index:99;width:370px;background:white;border:1px solid var(--slate-200);border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,0.14);display:none;flex-direction:column;max-height:510px;overflow:hidden;}
   #copilotPanel.open{display:flex;}
-  #chatMessages{flex:1;overflow-y:auto;padding:16px;space-y:12px;max-height:360px;}
+  #chatMessages{flex:1;overflow-y:auto;padding:14px;max-height:340px;}
   #chatMessages::-webkit-scrollbar{width:4px;}
-  #chatMessages::-webkit-scrollbar-thumb{background:rgba(0,212,255,0.2);border-radius:2px;}
-  .msg-ai{display:flex;gap:8px;margin-bottom:12px;}
-  .msg-user{display:flex;gap:8px;flex-direction:row-reverse;margin-bottom:12px;}
-  .msg-bubble-ai{background:rgba(255,255,255,0.05);border:1px solid var(--border);
-    border-radius:14px;border-top-left-radius:4px;padding:10px 14px;
-    font-size:13px;color:#cbd5e1;max-width:280px;line-height:1.5;}
-  .msg-bubble-user{background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.2);
-    border-radius:14px;border-top-right-radius:4px;padding:10px 14px;
-    font-size:13px;color:#cbd5e1;max-width:280px;line-height:1.5;}
-  .ai-avatar{width:28px;height:28px;border-radius:50%;flex-shrink:0;
-    background:linear-gradient(135deg,#7c3aed,#00d4ff);
-    display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;}
-
-  /* Typing indicator */
-  .typing{display:inline-flex;gap:4px;padding:8px 12px;}
-  .typing span{width:6px;height:6px;border-radius:50%;background:#00d4ff;opacity:0.4;
-    animation:typingDot 1.2s ease-in-out infinite;}
+  #chatMessages::-webkit-scrollbar-thumb{background:#e2e8f0;border-radius:2px;}
+  .msg-ai{display:flex;gap:8px;margin-bottom:10px;}
+  .msg-user{display:flex;gap:8px;flex-direction:row-reverse;margin-bottom:10px;}
+  .msg-bubble-ai{background:var(--blue-50);border:1px solid var(--blue-100);border-radius:14px;border-top-left-radius:4px;padding:10px 13px;font-size:13px;color:var(--slate-700);max-width:270px;line-height:1.5;}
+  .msg-bubble-user{background:var(--blue-700);border-radius:14px;border-top-right-radius:4px;padding:10px 13px;font-size:13px;color:white;max-width:270px;line-height:1.5;}
+  .ai-avatar{width:28px;height:28px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,var(--blue-700),var(--blue-500));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;}
+  .typing{display:inline-flex;gap:3px;padding:6px 10px;}
+  .typing span{width:6px;height:6px;border-radius:50%;background:var(--blue-400);animation:typeDot 1.2s ease-in-out infinite;}
   .typing span:nth-child(2){animation-delay:0.2s;}
   .typing span:nth-child(3){animation-delay:0.4s;}
-  @keyframes typingDot{0%,80%,100%{transform:scale(0.7);opacity:0.4}40%{transform:scale(1);opacity:1}}
+  @keyframes typeDot{0%,80%,100%{transform:scale(0.7);opacity:0.4}40%{transform:scale(1);opacity:1}}
 
   /* Spinner */
-  .spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,0.2);
-    border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;}
+  .spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,0.4);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;}
   @keyframes spin{to{transform:rotate(360deg)}}
 
-  /* Stat card */
-  .stat-card{transition:all 0.3s;}
-  .stat-card:hover{transform:translateY(-2px);border-color:rgba(0,212,255,0.3) !important;}
-
-  /* Mobile sidebar */
-  @media(max-width:768px){
-    .sidebar{transform:translateX(-100%);}
-    .sidebar.mobile-open{transform:translateX(0);}
-    .main-content{margin-left:0;}
-    .mobile-overlay{display:block !important;}
-  }
-  .mobile-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:40;}
-
-  ::-webkit-scrollbar{width:6px;}
-  ::-webkit-scrollbar-track{background:var(--bg);}
-  ::-webkit-scrollbar-thumb{background:rgba(0,212,255,0.25);border-radius:3px;}
-
-  /* Quick suggestions */
-  .suggestion-pill{padding:6px 12px;border-radius:20px;font-size:11px;
-    background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.15);
-    color:#94a3b8;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
-  .suggestion-pill:hover{background:rgba(0,212,255,0.12);color:#e2e8f0;border-color:rgba(0,212,255,0.3);}
+  /* Suggestion pills */
+  .suggestion-pill{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:500;background:var(--blue-50);border:1px solid var(--blue-100);color:var(--blue-700);cursor:pointer;transition:all 0.15s;white-space:nowrap;}
+  .suggestion-pill:hover{background:var(--blue-100);}
 
   /* Reveal */
-  .reveal{opacity:0;transform:translateY(20px);transition:all 0.5s ease;}
+  .reveal{opacity:0;transform:translateY(18px);transition:all 0.5s ease;}
   .reveal.visible{opacity:1;transform:translateY(0);}
+
+  /* Live dot */
+  @keyframes pulse2{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.4)}}
+  .live-dot{animation:pulse2 2s infinite;display:inline-block;}
+
+  /* Data table */
+  #dataTable table{width:100%;border-collapse:collapse;font-size:12px;}
+  #dataTable th{background:var(--blue-50);color:var(--slate-700);padding:8px 10px;text-align:left;border-bottom:1px solid var(--blue-100);font-weight:600;font-size:11px;}
+  #dataTable td{padding:7px 10px;border-bottom:1px solid var(--slate-100);color:var(--slate-600);}
+  #dataTable tr:hover td{background:var(--slate-100);}
+
+  @media(max-width:768px){.sidebar{transform:translateX(-100%);}.sidebar.open{transform:translateX(0);}.main-content{margin-left:0;}}
+  ::-webkit-scrollbar{width:6px;}
+  ::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px;}
 </style>
 </head>
 <body>
-<div class="bg-mesh"></div>
-<div class="fixed inset-0 dot-grid pointer-events-none z-0 opacity-40"></div>
 
-<!-- Mobile Overlay -->
-<div class="mobile-overlay" id="mobileOverlay" onclick="closeSidebar()"></div>
-
-<!-- ===== SIDEBAR ===== -->
+<!-- SIDEBAR -->
 <aside class="sidebar" id="sidebar">
-  <div class="p-4 border-b" style="border-color:var(--border);">
+  <div class="p-4 border-b" style="border-color:var(--slate-200);">
     <a href="/" class="flex items-center gap-2">
-      <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-purple-600 flex items-center justify-center text-sm font-bold flex-shrink-0">S</div>
-      <span class="text-sm font-bold text-white">StockSense <span class="text-cyan">AI</span></span>
+      <div class="w-8 h-8 rounded-lg bg-blue-700 flex items-center justify-center text-white text-sm font-bold">S</div>
+      <span class="text-sm font-bold text-slate-800">StockSense <span style="color:var(--blue-700)">AI</span></span>
     </a>
   </div>
-
   <nav class="flex-1 p-3 space-y-1 mt-2">
-    <a href="/" class="sidebar-link">
-      <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-      Home
-    </a>
-    <div class="sidebar-link active">
-      <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-      Predictions
-    </div>
-    <a href="/sentiment" class="sidebar-link">
-      <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-      Sentiment
-    </a>
+    <a href="/" class="sidebar-link"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>Home</a>
+    <div class="sidebar-link active"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>Predictions</div>
+    <a href="/risk" class="sidebar-link"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>Risk Radar</a>
+    <a href="/portfolio" class="sidebar-link"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>Portfolio</a>
+    <a href="/sentiment" class="sidebar-link"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Sentiment</a>
   </nav>
-
-  <!-- Popular Stocks quick-access -->
-  <div class="p-3 border-t" style="border-color:var(--border);">
-    <div class="text-xs text-slate-600 font-medium px-2 mb-2 uppercase tracking-wider">Quick Access</div>
-    <div class="space-y-1">
-      <button onclick="quickSelect('RELIANCE.NS')" class="sidebar-link w-full text-left text-xs">🇮🇳 Reliance</button>
-      <button onclick="quickSelect('TCS.NS')" class="sidebar-link w-full text-left text-xs">🇮🇳 TCS</button>
-      <button onclick="quickSelect('AAPL')" class="sidebar-link w-full text-left text-xs">🇺🇸 Apple</button>
-      <button onclick="quickSelect('TSLA')" class="sidebar-link w-full text-left text-xs">🇺🇸 Tesla</button>
-    </div>
+  <div class="p-3 border-t" style="border-color:var(--slate-200);">
+    <div class="text-xs text-slate-400 font-semibold px-2 mb-2 uppercase tracking-wider">Quick Access</div>
+    <button onclick="quickSelect('RELIANCE.NS')" class="sidebar-link w-full text-left text-xs">🇮🇳 Reliance</button>
+    <button onclick="quickSelect('TCS.NS')" class="sidebar-link w-full text-left text-xs">🇮🇳 TCS</button>
+    <button onclick="quickSelect('AAPL')" class="sidebar-link w-full text-left text-xs">🇺🇸 Apple</button>
+    <button onclick="quickSelect('TSLA')" class="sidebar-link w-full text-left text-xs">🇺🇸 Tesla</button>
   </div>
 </aside>
 
-<!-- ===== MAIN ===== -->
-<div class="main-content relative z-10">
+<!-- MAIN CONTENT -->
+<div class="main-content">
 
-  <!-- Top bar -->
-  <div class="glass border-b sticky top-0 z-40 px-6 py-3 flex items-center justify-between" style="border-bottom:1px solid var(--border);">
+  <!-- Top Bar -->
+  <div class="nav-glass sticky top-0 z-40 px-5 py-3 flex items-center justify-between">
     <div class="flex items-center gap-3">
-      <button class="md:hidden text-slate-400" onclick="openSidebar()">
+      <button class="md:hidden text-slate-500" onclick="document.getElementById('sidebar').classList.toggle('open')">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
       </button>
-      <h1 class="text-base font-semibold text-white">Prediction Dashboard</h1>
+      <h1 class="font-bold text-slate-800 text-base">📊 Prediction Dashboard</h1>
     </div>
     <div class="flex items-center gap-3">
-      <div class="flex items-center gap-1.5 text-xs text-slate-500">
-        <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
-        Live Data
-      </div>
-      <a href="/sentiment" class="btn-primary px-4 py-2 rounded-lg text-xs font-semibold hidden sm:flex items-center gap-1.5">
-        📊 Sentiment
-      </a>
+      <span class="text-xs text-slate-400 flex items-center gap-1.5">
+        <span class="live-dot w-2 h-2 rounded-full bg-green-500 inline-block"></span>
+        Live Yahoo Finance
+      </span>
+      <a href="/risk" class="badge badge-blue hidden sm:flex">🛡 Risk Radar</a>
     </div>
   </div>
 
@@ -214,57 +158,52 @@
 
     <!-- Error -->
     {% if error_message %}
-    <div class="glass rounded-xl px-5 py-4 mb-6 flex items-center gap-3" style="border-color:rgba(239,68,68,0.3);background:rgba(239,68,68,0.06);">
-      <span class="text-red-400 text-lg">⚠</span>
-      <p class="text-red-300 text-sm">{{ error_message }}</p>
+    <div class="card px-5 py-4 mb-5 flex items-center gap-3 reveal" style="border-color:#fca5a5;background:#fef2f2;">
+      <span class="text-red-500 text-lg">⚠</span>
+      <p class="text-red-600 text-sm font-medium">{{ error_message }}</p>
     </div>
     {% endif %}
 
-    <!-- Search Form -->
-    <div class="glass-strong rounded-2xl p-6 mb-6 reveal glow-cyan">
-      <h2 class="text-sm font-medium text-slate-400 mb-4 uppercase tracking-wider">🔍 Analyze Stock</h2>
+    <!-- Search Card -->
+    <div class="card p-6 mb-6 reveal">
+      <div class="flex items-center gap-2 mb-4">
+        <div class="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center">🔍</div>
+        <h2 class="font-bold text-slate-700 text-sm uppercase tracking-wider">Analyze Any Stock</h2>
+      </div>
       <form method="POST" action="/prediction" onsubmit="showLoader()" id="predForm">
         <div class="flex gap-3 flex-col sm:flex-row">
           <div class="relative flex-1">
-            <input
-              type="text" id="stockInput" name="stock"
-              value="{{ stock_value or '' }}"
-              placeholder="Enter ticker: RELIANCE.NS, AAPL, TSLA, TCS.NS..."
-              class="dark-input pr-10"
-              onclick="toggleDropdown(true)" onkeyup="filterStocks()" autocomplete="off"
-            />
-            <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input type="text" id="stockInput" name="stock" value="{{ stock_value or '' }}"
+              placeholder="Search ticker: RELIANCE.NS, AAPL, TCS, TSLA..."
+              class="search-input" onclick="toggleDd(true)" onkeyup="filterStocks()" autocomplete="off"/>
             <!-- Dropdown -->
             <div id="dropdown" class="stock-dropdown hidden">
-              <div class="px-3 pt-2 pb-1 text-xs text-slate-600 uppercase tracking-wider font-medium">Indian Markets</div>
-              <div class="stock-opt" onclick="selectStock('RELIANCE.NS')">Reliance Industries <span class="tag">NSE</span></div>
-              <div class="stock-opt" onclick="selectStock('TCS.NS')">Tata Consultancy Services <span class="tag">NSE</span></div>
-              <div class="stock-opt" onclick="selectStock('INFY.NS')">Infosys <span class="tag">NSE</span></div>
-              <div class="stock-opt" onclick="selectStock('HDFCBANK.NS')">HDFC Bank <span class="tag">NSE</span></div>
-              <div class="stock-opt" onclick="selectStock('ICICIBANK.NS')">ICICI Bank <span class="tag">NSE</span></div>
-              <div class="stock-opt" onclick="selectStock('SBIN.NS')">State Bank of India <span class="tag">NSE</span></div>
-              <div class="stock-opt" onclick="selectStock('WIPRO.NS')">Wipro <span class="tag">NSE</span></div>
-              <div class="stock-opt" onclick="selectStock('POWERGRID.NS')">Power Grid Corp <span class="tag">NSE</span></div>
-              <div class="border-t my-1" style="border-color:var(--border);"></div>
-              <div class="px-3 pt-1 pb-1 text-xs text-slate-600 uppercase tracking-wider font-medium">US Markets</div>
-              <div class="stock-opt" onclick="selectStock('AAPL')">Apple Inc. <span class="tag">NASDAQ</span></div>
-              <div class="stock-opt" onclick="selectStock('TSLA')">Tesla Inc. <span class="tag">NASDAQ</span></div>
-              <div class="stock-opt" onclick="selectStock('GOOGL')">Alphabet (Google) <span class="tag">NASDAQ</span></div>
-              <div class="stock-opt" onclick="selectStock('MSFT')">Microsoft <span class="tag">NASDAQ</span></div>
-              <div class="stock-opt" onclick="selectStock('AMZN')">Amazon <span class="tag">NASDAQ</span></div>
+              <div class="px-3 pt-2.5 pb-1 text-xs text-slate-400 font-semibold uppercase tracking-wider">🇮🇳 Indian Markets</div>
+              <div class="stock-opt" onclick="selectStock('RELIANCE.NS')">Reliance Industries <span class="stock-tag">NSE</span></div>
+              <div class="stock-opt" onclick="selectStock('TCS.NS')">Tata Consultancy Services <span class="stock-tag">NSE</span></div>
+              <div class="stock-opt" onclick="selectStock('INFY.NS')">Infosys <span class="stock-tag">NSE</span></div>
+              <div class="stock-opt" onclick="selectStock('HDFCBANK.NS')">HDFC Bank <span class="stock-tag">NSE</span></div>
+              <div class="stock-opt" onclick="selectStock('ICICIBANK.NS')">ICICI Bank <span class="stock-tag">NSE</span></div>
+              <div class="stock-opt" onclick="selectStock('SBIN.NS')">State Bank of India <span class="stock-tag">NSE</span></div>
+              <div class="stock-opt" onclick="selectStock('WIPRO.NS')">Wipro <span class="stock-tag">NSE</span></div>
+              <div class="border-t my-1" style="border-color:var(--slate-100);"></div>
+              <div class="px-3 pt-1.5 pb-1 text-xs text-slate-400 font-semibold uppercase tracking-wider">🇺🇸 US Markets</div>
+              <div class="stock-opt" onclick="selectStock('AAPL')">Apple Inc. <span class="stock-tag">NASDAQ</span></div>
+              <div class="stock-opt" onclick="selectStock('TSLA')">Tesla Inc. <span class="stock-tag">NASDAQ</span></div>
+              <div class="stock-opt" onclick="selectStock('GOOGL')">Alphabet (Google) <span class="stock-tag">NASDAQ</span></div>
+              <div class="stock-opt" onclick="selectStock('MSFT')">Microsoft <span class="stock-tag">NASDAQ</span></div>
+              <div class="stock-opt" onclick="selectStock('AMZN')">Amazon <span class="stock-tag">NASDAQ</span></div>
             </div>
           </div>
-          <button id="submitBtn" type="submit" class="btn-primary px-6 py-3 rounded-xl text-sm flex items-center gap-2 whitespace-nowrap">
+          <button id="submitBtn" type="submit" class="btn-primary px-6 py-3.5 rounded-xl text-sm flex items-center gap-2 whitespace-nowrap">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-            Run Prediction
+            Run AI Prediction
           </button>
         </div>
       </form>
-
-      <!-- Popular quick buttons -->
-      <div class="flex flex-wrap gap-2 mt-4">
-        <span class="text-xs text-slate-600 self-center">Popular:</span>
+      <div class="flex flex-wrap gap-2 mt-4 items-center">
+        <span class="text-xs text-slate-400 font-medium">Popular:</span>
         <button onclick="quickSelect('RELIANCE.NS')" class="suggestion-pill">RELIANCE</button>
         <button onclick="quickSelect('TCS.NS')" class="suggestion-pill">TCS</button>
         <button onclick="quickSelect('HDFCBANK.NS')" class="suggestion-pill">HDFCBANK</button>
@@ -274,43 +213,40 @@
       </div>
     </div>
 
-    <!-- ===== RESULTS ===== -->
     {% if recommendation %}
 
-    <!-- Stock header -->
-    <div class="glass-strong rounded-2xl p-5 mb-6 reveal">
+    <!-- Stock Header -->
+    <div class="card p-5 mb-5 reveal">
       <div class="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <div class="text-xs text-slate-500 mb-1 uppercase tracking-wider">Analyzing</div>
-          <h2 class="text-2xl font-bold text-white">{{ resolved_stock }}</h2>
+          <div class="text-xs text-slate-400 mb-0.5 uppercase tracking-wider">Analyzing</div>
+          <h2 class="text-2xl font-extrabold text-slate-800">{{ resolved_stock }}</h2>
           {% if recommendation.last_close %}
-          <div class="text-lg font-semibold text-slate-300 mt-1">
+          <div class="text-lg font-semibold text-slate-600 mt-0.5">
             ₹{{ recommendation.last_close }}
-            {% if recommendation.trend_pct %}
-              <span class="text-sm ml-2 {% if recommendation.trend_pct > 0 %}text-green-400{% else %}text-red-400{% endif %}">
+            {% if recommendation.trend_pct is not none %}
+              <span class="text-sm ml-2 {% if recommendation.trend_pct > 0 %}text-emerald-600{% else %}text-red-500{% endif %}">
                 {{ '▲' if recommendation.trend_pct > 0 else '▼' }} {{ recommendation.trend_pct|abs }}% (5d)
               </span>
             {% endif %}
           </div>
           {% endif %}
         </div>
-
-        <!-- AI Recommendation Badge -->
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-5">
+          {% if recommendation.predicted_price %}
           <div class="text-center">
-            <div class="text-xs text-slate-500 mb-2">AI Prediction</div>
-            {% if recommendation.predicted_price %}
-            <div class="text-xl font-bold text-cyan">₹{{ recommendation.predicted_price }}</div>
-            {% if recommendation.predicted_move_pct %}
-            <div class="text-xs mt-0.5 {% if recommendation.predicted_move_pct > 0 %}text-green-400{% else %}text-red-400{% endif %}">
-              {{ '+' if recommendation.predicted_move_pct > 0 else '' }}{{ recommendation.predicted_move_pct }}% move
+            <div class="text-xs text-slate-400 mb-1">AI Price Target</div>
+            <div class="text-xl font-bold text-blue-700">₹{{ recommendation.predicted_price }}</div>
+            {% if recommendation.predicted_move_pct is not none %}
+            <div class="text-xs font-semibold {% if recommendation.predicted_move_pct > 0 %}text-emerald-600{% else %}text-red-500{% endif %}">
+              {{ '+' if recommendation.predicted_move_pct > 0 else '' }}{{ recommendation.predicted_move_pct }}%
             </div>
             {% endif %}
-            {% endif %}
           </div>
+          {% endif %}
           <div class="text-center">
-            <div class="text-xs text-slate-500 mb-2">Signal</div>
-            <div class="px-4 py-2 rounded-xl text-lg font-bold
+            <div class="text-xs text-slate-400 mb-1">AI Signal</div>
+            <div class="px-4 py-2 rounded-xl text-base font-bold
               {% if recommendation.action and 'BUY' in recommendation.action %}rec-buy{% elif recommendation.action and 'SELL' in recommendation.action %}rec-sell{% else %}rec-hold{% endif %}">
               {{ recommendation.action }}
             </div>
@@ -319,129 +255,113 @@
       </div>
     </div>
 
-    <!-- KPI Cards -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6 reveal">
-      <div class="glass stat-card rounded-xl p-4">
-        <div class="text-xs text-slate-500 mb-1">Confidence</div>
-        <div class="text-xl font-bold
-          {% if recommendation.confidence == 'High' %}text-green-400
-          {% elif recommendation.confidence == 'Medium' %}text-yellow-400
-          {% else %}text-slate-400{% endif %}">
-          {{ recommendation.confidence }}
-        </div>
+    <!-- KPI Row -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5 reveal">
+      <div class="card card-hover p-4">
+        <div class="text-xs text-slate-400 mb-1 uppercase tracking-wider">Confidence</div>
+        <div class="text-xl font-bold {% if recommendation.confidence == 'High' %}text-emerald-600{% elif recommendation.confidence == 'Medium' %}text-amber-600{% else %}text-slate-400{% endif %}">{{ recommendation.confidence }}</div>
         <div class="flex gap-1 mt-2">
           <div class="conf-dot {% if recommendation.confidence in ['Low','Medium','High'] %}filled{% endif %}"></div>
           <div class="conf-dot {% if recommendation.confidence in ['Medium','High'] %}filled{% endif %}"></div>
           <div class="conf-dot {% if recommendation.confidence == 'High' %}filled{% endif %}"></div>
         </div>
       </div>
-      {% if recommendation.rsi %}
-      <div class="glass stat-card rounded-xl p-4">
-        <div class="text-xs text-slate-500 mb-1">RSI (14)</div>
-        <div class="text-xl font-bold
-          {% if recommendation.rsi < 30 %}text-green-400
-          {% elif recommendation.rsi > 70 %}text-red-400
-          {% else %}text-cyan{% endif %}">
-          {{ recommendation.rsi }}
-        </div>
-        <div class="text-xs text-slate-500 mt-1">
-          {% if recommendation.rsi < 30 %}Oversold{% elif recommendation.rsi > 70 %}Overbought{% else %}Neutral{% endif %}
-        </div>
+      {% if recommendation.rsi is not none %}
+      <div class="card card-hover p-4">
+        <div class="text-xs text-slate-400 mb-1 uppercase tracking-wider">RSI (14)</div>
+        <div class="text-xl font-bold {% if recommendation.rsi < 30 %}text-emerald-600{% elif recommendation.rsi > 70 %}text-red-500{% else %}text-blue-700{% endif %}">{{ recommendation.rsi }}</div>
+        <div class="text-xs text-slate-400 mt-1">{% if recommendation.rsi < 30 %}Oversold{% elif recommendation.rsi > 70 %}Overbought{% else %}Neutral{% endif %}</div>
       </div>
       {% endif %}
       {% if recommendation.trend_pct is not none %}
-      <div class="glass stat-card rounded-xl p-4">
-        <div class="text-xs text-slate-500 mb-1">5-Day Trend</div>
-        <div class="text-xl font-bold {% if recommendation.trend_pct > 0 %}text-green-400{% elif recommendation.trend_pct < 0 %}text-red-400{% else %}text-slate-400{% endif %}">
+      <div class="card card-hover p-4">
+        <div class="text-xs text-slate-400 mb-1 uppercase tracking-wider">5-Day Trend</div>
+        <div class="text-xl font-bold {% if recommendation.trend_pct > 0 %}text-emerald-600{% elif recommendation.trend_pct < 0 %}text-red-500{% else %}text-slate-400{% endif %}">
           {{ '+' if recommendation.trend_pct > 0 else '' }}{{ recommendation.trend_pct }}%
         </div>
-        <div class="text-xs text-slate-500 mt-1">{{ 'Uptrend' if recommendation.trend_pct > 0 else 'Downtrend' if recommendation.trend_pct < 0 else 'Sideways' }}</div>
+        <div class="text-xs text-slate-400 mt-1">{{ 'Uptrend' if recommendation.trend_pct > 0 else 'Downtrend' if recommendation.trend_pct < 0 else 'Sideways' }}</div>
       </div>
       {% endif %}
       {% if recommendation.predicted_move_pct is not none %}
-      <div class="glass stat-card rounded-xl p-4">
-        <div class="text-xs text-slate-500 mb-1">Predicted Move</div>
-        <div class="text-xl font-bold {% if recommendation.predicted_move_pct > 0 %}text-green-400{% elif recommendation.predicted_move_pct < 0 %}text-red-400{% else %}text-slate-400{% endif %}">
+      <div class="card card-hover p-4">
+        <div class="text-xs text-slate-400 mb-1 uppercase tracking-wider">AI Forecast</div>
+        <div class="text-xl font-bold {% if recommendation.predicted_move_pct > 0 %}text-emerald-600{% elif recommendation.predicted_move_pct < 0 %}text-red-500{% else %}text-slate-400{% endif %}">
           {{ '+' if recommendation.predicted_move_pct > 0 else '' }}{{ recommendation.predicted_move_pct }}%
         </div>
-        <div class="text-xs text-slate-500 mt-1">AI Forecast</div>
+        <div class="text-xs text-slate-400 mt-1">Predicted move</div>
       </div>
       {% endif %}
     </div>
 
-    <!-- RSI visual bar -->
-    {% if recommendation.rsi %}
-    <div class="glass-strong rounded-xl p-4 mb-6 reveal">
-      <div class="flex justify-between text-xs text-slate-500 mb-2">
-        <span>RSI Indicator</span>
-        <span class="{% if recommendation.rsi < 30 %}text-green-400{% elif recommendation.rsi > 70 %}text-red-400{% else %}text-cyan{% endif %}">{{ recommendation.rsi }}</span>
+    <!-- RSI Bar -->
+    {% if recommendation.rsi is not none %}
+    <div class="card p-4 mb-5 reveal">
+      <div class="flex justify-between text-xs font-medium mb-2">
+        <span class="text-slate-600">RSI Indicator</span>
+        <span class="{% if recommendation.rsi < 30 %}text-emerald-600{% elif recommendation.rsi > 70 %}text-red-500{% else %}text-blue-700{% endif %} font-bold">{{ recommendation.rsi }}</span>
       </div>
-      <div class="rsi-bar">
-        <div class="rsi-needle" id="rsiNeedle" style="left:{{ recommendation.rsi }}%"></div>
+      <div class="rsi-track">
+        <div class="rsi-needle" style="left:{{ recommendation.rsi }}%"></div>
       </div>
-      <div class="flex justify-between text-xs text-slate-600 mt-1.5">
+      <div class="flex justify-between text-xs text-slate-400 mt-1.5">
         <span>0 — Oversold</span><span>30</span><span>70</span><span>Overbought — 100</span>
       </div>
     </div>
     {% endif %}
 
     <!-- AI Reasoning -->
-    <div class="glass-strong rounded-2xl p-6 mb-6 reveal" style="border-color:rgba(124,58,237,0.2);">
-      <div class="flex items-center gap-2 mb-3">
-        <div class="w-6 h-6 rounded-lg bg-purple-500/20 flex items-center justify-center text-xs">🤖</div>
-        <h3 class="text-sm font-semibold text-white">AI Reasoning</h3>
-        <div class="ml-auto text-xs text-slate-500">LSTM + Technical Analysis</div>
+    <div class="card-blue p-5 mb-5 rounded-2xl reveal">
+      <div class="flex items-center gap-2 mb-2">
+        <div class="w-6 h-6 rounded-lg bg-blue-100 flex items-center justify-center text-xs">🤖</div>
+        <h3 class="font-semibold text-blue-800 text-sm">AI Reasoning</h3>
+        <div class="ml-auto badge badge-blue text-xs">LSTM + Technical Analysis</div>
       </div>
-      <p class="text-slate-300 text-sm leading-relaxed">{{ recommendation.reason }}</p>
+      <p class="text-slate-700 text-sm leading-relaxed">{{ recommendation.reason }}</p>
     </div>
 
-    {% endif %}{# end if recommendation #}
+    {% endif %}
 
-    <!-- Charts Grid -->
+    <!-- Charts -->
     {% if plot_path_ema_20_50 or plot_path_ema_100_200 or plot_path_prediction %}
-    <div class="grid {% if plot_path_prediction %}md:grid-cols-2{% else %}md:grid-cols-2{% endif %} gap-6 mb-6">
-
+    <div class="grid md:grid-cols-2 gap-5 mb-5">
       {% if plot_path_ema_20_50 %}
-      <div class="glass-strong rounded-2xl p-5 reveal">
+      <div class="card p-5 reveal">
         <div class="flex items-center gap-2 mb-3">
-          <div class="w-2 h-2 rounded-full bg-cyan-400"></div>
-          <h3 class="text-sm font-semibold text-white">EMA 20 & 50</h3>
-          <span class="ml-auto text-xs text-slate-500">Short-term momentum</span>
+          <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+          <h3 class="font-semibold text-slate-700 text-sm">EMA 20 & 50</h3>
+          <span class="ml-auto text-xs text-slate-400">Short-term</span>
         </div>
-        <img src="{{ url_for('static', filename='ema_20_50.png') }}" class="chart-img" alt="EMA 20/50">
+        <img src="{{ url_for('static', filename='ema_20_50.png') }}" class="w-full rounded-lg" alt="EMA 20/50">
       </div>
       {% endif %}
-
       {% if plot_path_ema_100_200 %}
-      <div class="glass-strong rounded-2xl p-5 reveal" style="transition-delay:0.1s">
+      <div class="card p-5 reveal" style="transition-delay:.07s">
         <div class="flex items-center gap-2 mb-3">
-          <div class="w-2 h-2 rounded-full bg-purple-400"></div>
-          <h3 class="text-sm font-semibold text-white">EMA 100 & 200</h3>
-          <span class="ml-auto text-xs text-slate-500">Long-term trend</span>
+          <div class="w-3 h-3 rounded-full bg-purple-500"></div>
+          <h3 class="font-semibold text-slate-700 text-sm">EMA 100 & 200</h3>
+          <span class="ml-auto text-xs text-slate-400">Long-term</span>
         </div>
-        <img src="{{ url_for('static', filename='ema_100_200.png') }}" class="chart-img" alt="EMA 100/200">
+        <img src="{{ url_for('static', filename='ema_100_200.png') }}" class="w-full rounded-lg" alt="EMA 100/200">
       </div>
       {% endif %}
-
       {% if plot_path_prediction %}
-      <div class="glass-strong rounded-2xl p-5 md:col-span-2 reveal">
+      <div class="card p-5 md:col-span-2 reveal">
         <div class="flex items-center gap-2 mb-3">
-          <div class="w-2 h-2 rounded-full bg-green-400"></div>
-          <h3 class="text-sm font-semibold text-white">LSTM Prediction vs Actual</h3>
-          <span class="ml-auto text-xs text-green-400">AI Model Output</span>
+          <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
+          <h3 class="font-semibold text-slate-700 text-sm">LSTM Prediction vs Actual</h3>
+          <span class="ml-auto badge badge-green text-xs">AI Model Output</span>
         </div>
-        <img src="{{ url_for('static', filename='prediction.png') }}" class="chart-img" alt="Prediction vs Actual">
+        <img src="{{ url_for('static', filename='prediction.png') }}" class="w-full rounded-lg" alt="Prediction">
       </div>
       {% endif %}
-
     </div>
     {% endif %}
 
     <!-- Data Table -->
     {% if data_desc %}
-    <div class="glass-strong rounded-2xl overflow-hidden mb-6 reveal">
-      <div class="px-5 py-3 flex items-center justify-between border-b" style="border-color:var(--border);">
-        <h3 class="text-sm font-semibold text-white">📊 Statistical Summary</h3>
+    <div class="card overflow-hidden mb-5 reveal">
+      <div class="px-5 py-3.5 border-b flex items-center justify-between" style="border-color:var(--slate-200);background:var(--slate-100);">
+        <h3 class="font-bold text-slate-700 text-sm">📊 Statistical Summary</h3>
         {% if dataset_link %}
         <a href="/download/{{ dataset_link }}" class="btn-primary px-3 py-1.5 rounded-lg text-xs flex items-center gap-1.5">
           <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
@@ -449,201 +369,127 @@
         </a>
         {% endif %}
       </div>
-      <div class="overflow-x-auto p-4 text-xs" id="dataTable">
-        {{ data_desc | safe }}
-      </div>
+      <div class="overflow-x-auto p-4" id="dataTable">{{ data_desc | safe }}</div>
     </div>
     {% endif %}
 
     <!-- Empty state -->
     {% if not recommendation and not error_message %}
-    <div class="text-center py-24 reveal">
-      <div class="text-6xl mb-6">🔮</div>
-      <h3 class="text-xl font-semibold text-white mb-2">Ready to Predict</h3>
-      <p class="text-slate-400 max-w-md mx-auto mb-8">Enter any stock ticker above to get AI-powered predictions, technical analysis, and buy/sell signals.</p>
+    <div class="text-center py-20 reveal">
+      <div class="w-20 h-20 rounded-3xl bg-blue-50 border border-blue-100 flex items-center justify-center text-4xl mx-auto mb-6">📊</div>
+      <h3 class="text-xl font-bold text-slate-700 mb-2">Ready to Analyze</h3>
+      <p class="text-slate-400 max-w-md mx-auto mb-8 text-sm">Enter any stock ticker above to get AI-powered LSTM predictions, technical indicators, and buy/sell signals.</p>
       <div class="flex flex-wrap gap-3 justify-center">
-        <button onclick="quickSelect('RELIANCE.NS')" class="btn-primary px-5 py-2.5 rounded-xl text-sm font-semibold">Try RELIANCE.NS</button>
-        <button onclick="quickSelect('AAPL')" class="suggestion-pill px-5 py-2.5 text-sm">Try AAPL</button>
-        <button onclick="quickSelect('TSLA')" class="suggestion-pill px-5 py-2.5 text-sm">Try TSLA</button>
+        <button onclick="quickSelect('RELIANCE.NS')" class="btn-primary px-5 py-2.5 rounded-xl text-sm">Try RELIANCE.NS</button>
+        <button onclick="quickSelect('AAPL')" class="btn-outline px-5 py-2.5 rounded-xl text-sm">Try AAPL</button>
+        <button onclick="quickSelect('TSLA')" class="btn-outline px-5 py-2.5 rounded-xl text-sm">Try TSLA</button>
       </div>
     </div>
     {% endif %}
 
-  </div>{# end main container #}
-</div>{# end main-content #}
+  </div>
+</div>
 
-<!-- ===== AI COPILOT ===== -->
+<!-- AI COPILOT BUTTON -->
 <button id="copilotBtn" title="AI Trading Copilot">💬</button>
 
+<!-- AI COPILOT PANEL -->
 <div id="copilotPanel">
-  <!-- Header -->
-  <div class="flex items-center justify-between px-4 py-3 border-b" style="border-color:rgba(0,212,255,0.15);">
-    <div class="flex items-center gap-2">
-      <div class="w-7 h-7 rounded-full bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center text-xs font-bold">AI</div>
+  <div class="flex items-center justify-between px-4 py-3 border-b" style="border-color:var(--slate-200);">
+    <div class="flex items-center gap-2.5">
+      <div class="ai-avatar">AI</div>
       <div>
-        <div class="text-sm font-semibold text-white">AI Trading Copilot</div>
-        <div class="text-xs text-green-400 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-green-400 inline-block animate-pulse"></span>Online</div>
+        <div class="text-sm font-bold text-slate-800">AI Trading Copilot</div>
+        <div class="text-xs text-emerald-600 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block live-dot"></span>GPT-4 Online</div>
       </div>
     </div>
-    <button onclick="toggleCopilot()" class="text-slate-500 hover:text-white text-lg">×</button>
+    <button onclick="toggleCopilot()" class="text-slate-400 hover:text-slate-700 text-xl font-light">×</button>
   </div>
-
-  <!-- Messages -->
   <div id="chatMessages">
     <div class="msg-ai">
       <div class="ai-avatar">AI</div>
       <div class="msg-bubble-ai">
-        Hi! I'm your AI Trading Copilot powered by GPT-4. Ask me anything about stocks, technical analysis, or market trends.
-        {% if resolved_stock and resolved_stock != '' %}
-        <br><br>I see you're analyzing <strong>{{ resolved_stock }}</strong> — feel free to ask me about it!
-        {% endif %}
+        Hi! I'm your AI Trading Copilot. Ask me anything about stocks, technical indicators, or market strategy.
+        {% if resolved_stock %}<br><br>I see you're analyzing <strong>{{ resolved_stock }}</strong> — feel free to ask!{% endif %}
       </div>
     </div>
   </div>
-
-  <!-- Suggestions -->
-  <div class="px-3 py-2 flex gap-2 overflow-x-auto border-t" style="border-color:rgba(0,212,255,0.1);">
-    <button class="suggestion-pill flex-shrink-0" onclick="sendSuggestion(this)">Should I buy {{ resolved_stock or 'this stock' }}?</button>
-    <button class="suggestion-pill flex-shrink-0" onclick="sendSuggestion(this)">Explain the RSI signal</button>
-    <button class="suggestion-pill flex-shrink-0" onclick="sendSuggestion(this)">What's the risk?</button>
+  <div class="px-3 py-2 flex gap-2 overflow-x-auto border-t" style="border-color:var(--slate-100);">
+    <button class="suggestion-pill flex-shrink-0" onclick="sendSugg(this)">Should I buy {{ resolved_stock or 'this stock' }}?</button>
+    <button class="suggestion-pill flex-shrink-0" onclick="sendSugg(this)">Explain the RSI</button>
+    <button class="suggestion-pill flex-shrink-0" onclick="sendSugg(this)">What is the risk?</button>
   </div>
-
-  <!-- Input -->
-  <div class="flex gap-2 p-3 border-t" style="border-color:rgba(0,212,255,0.1);">
-    <input id="copilotInput" type="text" placeholder="Ask about stocks..."
-      class="dark-input py-2.5 text-sm flex-1"
-      onkeydown="if(event.key==='Enter')sendMessage()"
-      style="background:rgba(255,255,255,0.04);"
-    />
-    <button onclick="sendMessage()" class="btn-primary px-3 py-2.5 rounded-xl text-sm">
+  <div class="flex gap-2 p-3 border-t" style="border-color:var(--slate-100);">
+    <input id="copilotInput" type="text" placeholder="Ask anything about stocks..."
+      class="flex-1 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
+      onkeydown="if(event.key==='Enter')sendMsg()"/>
+    <button onclick="sendMsg()" class="btn-primary w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0">
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
     </button>
   </div>
 </div>
 
 <script>
-// Scroll reveal
-const revealObs = new IntersectionObserver(e => e.forEach(x => { if(x.isIntersecting) x.target.classList.add('visible'); }), {threshold:0.1});
-document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
+// Reveal
+const obs=new IntersectionObserver(e=>e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('visible');}),{threshold:0.1});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
 
-// Form
-function showLoader() {
-  const btn = document.getElementById('submitBtn');
-  btn.innerHTML = '<div class="spinner"></div><span>Analyzing...</span>';
-  btn.disabled = true;
+// Form loader
+function showLoader(){
+  const btn=document.getElementById('submitBtn');
+  btn.innerHTML='<div class="spinner"></div><span>Analyzing...</span>';
+  btn.disabled=true;
 }
 
 // Dropdown
-function toggleDropdown(show) {
-  document.getElementById('dropdown').classList.toggle('hidden', !show);
+function toggleDd(show){document.getElementById('dropdown').classList.toggle('hidden',!show);}
+function selectStock(v){document.getElementById('stockInput').value=v;toggleDd(false);}
+function filterStocks(){
+  const q=document.getElementById('stockInput').value.toUpperCase();
+  document.querySelectorAll('.stock-opt').forEach(i=>{i.style.display=i.textContent.toUpperCase().includes(q)?'':'none';});
+  toggleDd(true);
 }
-function selectStock(value) {
-  document.getElementById('stockInput').value = value;
-  toggleDropdown(false);
-}
-function filterStocks() {
-  const q = document.getElementById('stockInput').value.toUpperCase();
-  document.querySelectorAll('.stock-opt').forEach(item => {
-    item.style.display = item.textContent.toUpperCase().includes(q) ? '' : 'none';
-  });
-  toggleDropdown(true);
-}
-document.addEventListener('click', e => {
-  if (!e.target.closest('.relative')) toggleDropdown(false);
-});
-function quickSelect(ticker) {
-  document.getElementById('stockInput').value = ticker;
-  document.getElementById('predForm').submit();
-  showLoader();
-}
+document.addEventListener('click',e=>{if(!e.target.closest('.relative'))toggleDd(false);});
+function quickSelect(t){document.getElementById('stockInput').value=t;showLoader();document.getElementById('predForm').submit();}
 
 // Sidebar mobile
-function openSidebar() {
-  document.getElementById('sidebar').classList.add('mobile-open');
-  document.getElementById('mobileOverlay').style.display = 'block';
-}
-function closeSidebar() {
-  document.getElementById('sidebar').classList.remove('mobile-open');
-  document.getElementById('mobileOverlay').style.display = 'none';
-}
+function openSidebar(){document.getElementById('sidebar').classList.toggle('open');}
 
-// Style data table
-document.querySelectorAll('#dataTable table').forEach(t => {
-  t.style.width = '100%'; t.style.borderCollapse = 'collapse'; t.style.fontSize = '11px';
-});
-document.querySelectorAll('#dataTable th').forEach(th => {
-  th.style.cssText = 'background:rgba(0,212,255,0.08);color:#94a3b8;padding:8px 10px;text-align:left;border-bottom:1px solid rgba(0,212,255,0.1);';
-});
-document.querySelectorAll('#dataTable td').forEach(td => {
-  td.style.cssText = 'padding:7px 10px;border-bottom:1px solid rgba(255,255,255,0.03);color:#94a3b8;';
-});
-
-// ===== AI COPILOT =====
-let copilotOpen = false;
-const currentStock = "{{ resolved_stock or '' }}";
-
-function toggleCopilot() {
-  copilotOpen = !copilotOpen;
-  const panel = document.getElementById('copilotPanel');
-  panel.classList.toggle('open', copilotOpen);
-  document.getElementById('copilotBtn').textContent = copilotOpen ? '×' : '💬';
-  if (copilotOpen) { document.getElementById('copilotInput').focus(); scrollChat(); }
+// Copilot
+let cpOpen=false;
+const stock=`{{ resolved_stock or '' }}`;
+function toggleCopilot(){
+  cpOpen=!cpOpen;
+  document.getElementById('copilotPanel').classList.toggle('open',cpOpen);
+  document.getElementById('copilotBtn').textContent=cpOpen?'×':'💬';
+  if(cpOpen){document.getElementById('copilotInput').focus();scrollChat();}
 }
-document.getElementById('copilotBtn').addEventListener('click', toggleCopilot);
-
-function scrollChat() {
-  const el = document.getElementById('chatMessages');
-  el.scrollTop = el.scrollHeight;
+document.getElementById('copilotBtn').addEventListener('click',toggleCopilot);
+function scrollChat(){const el=document.getElementById('chatMessages');el.scrollTop=el.scrollHeight;}
+function appendMsg(role,content){
+  const w=document.getElementById('chatMessages'),d=document.createElement('div');
+  d.className=role==='ai'?'msg-ai':'msg-user';
+  if(role==='ai') d.innerHTML=`<div class="ai-avatar">AI</div><div class="msg-bubble-ai">${content}</div>`;
+  else d.innerHTML=`<div class="msg-bubble-user">${content}</div><div style="width:28px;height:28px;border-radius:50%;background:var(--blue-50);border:1px solid var(--blue-100);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--blue-700);font-weight:700">U</div>`;
+  w.appendChild(d);scrollChat();
 }
-
-function appendMessage(role, content) {
-  const wrap = document.getElementById('chatMessages');
-  const div = document.createElement('div');
-  div.className = role === 'ai' ? 'msg-ai' : 'msg-user';
-  if (role === 'ai') {
-    div.innerHTML = `<div class="ai-avatar">AI</div><div class="msg-bubble-ai">${content}</div>`;
-  } else {
-    div.innerHTML = `<div class="msg-bubble-user">${content}</div><div style="width:28px;height:28px;border-radius:50%;background:#1e293b;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px">U</div>`;
-  }
-  wrap.appendChild(div);
-  scrollChat();
+function showTyping(){
+  const w=document.getElementById('chatMessages'),d=document.createElement('div');
+  d.className='msg-ai';d.id='typing';
+  d.innerHTML=`<div class="ai-avatar">AI</div><div class="msg-bubble-ai"><div class="typing"><span></span><span></span><span></span></div></div>`;
+  w.appendChild(d);scrollChat();
 }
-
-function showTyping() {
-  const wrap = document.getElementById('chatMessages');
-  const div = document.createElement('div');
-  div.className = 'msg-ai'; div.id = 'typingIndicator';
-  div.innerHTML = `<div class="ai-avatar">AI</div><div class="msg-bubble-ai"><div class="typing"><span></span><span></span><span></span></div></div>`;
-  wrap.appendChild(div); scrollChat();
+function removeTyping(){const t=document.getElementById('typing');if(t)t.remove();}
+async function sendMsg(){
+  const inp=document.getElementById('copilotInput');
+  const msg=inp.value.trim();if(!msg)return;
+  inp.value='';appendMsg('user',msg);showTyping();
+  try{
+    const r=await fetch('/api/copilot',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg,stock})});
+    const d=await r.json();removeTyping();appendMsg('ai',d.reply||'Sorry, I had an error. Please try again.');
+  }catch(e){removeTyping();appendMsg('ai','Connection error. Please try again.');}
 }
-function removeTyping() { const t = document.getElementById('typingIndicator'); if(t) t.remove(); }
-
-async function sendMessage() {
-  const input = document.getElementById('copilotInput');
-  const msg = input.value.trim();
-  if (!msg) return;
-  input.value = '';
-  appendMessage('user', msg);
-  showTyping();
-  try {
-    const res = await fetch('/api/copilot', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({message: msg, stock: currentStock})
-    });
-    const data = await res.json();
-    removeTyping();
-    appendMessage('ai', data.reply || 'Sorry, I encountered an error. Please try again.');
-  } catch(e) {
-    removeTyping();
-    appendMessage('ai', 'Connection error. Please check your network and try again.');
-  }
-}
-
-function sendSuggestion(btn) {
-  document.getElementById('copilotInput').value = btn.textContent;
-  sendMessage();
-}
+function sendSugg(btn){document.getElementById('copilotInput').value=btn.textContent;sendMsg();}
 </script>
 </body>
 </html>

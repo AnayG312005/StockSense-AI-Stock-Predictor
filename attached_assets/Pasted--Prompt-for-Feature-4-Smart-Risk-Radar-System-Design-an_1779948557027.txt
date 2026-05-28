@@ -1,0 +1,122 @@
+# Prompt for Feature 4 — Smart Risk Radar System
+
+Design and develop an enterprise-grade AI-powered “Smart Risk Radar System” for a futuristic stock analytics and trading intelligence platform. The goal is to create a highly advanced risk monitoring engine that feels similar to premium hedge-fund analytics software used by institutional investors, quantitative traders, and market intelligence firms. The system must combine real-time market analysis, AI anomaly detection, behavioral analytics, and predictive risk scoring into one visually powerful interface.
+
+The Smart Risk Radar System should continuously analyze live stock market data, trading behavior, historical volatility, sector movement, market sentiment, unusual price activity, and institutional trading patterns. The interface must look modern, intelligent, premium, data-heavy, and visually sophisticated while still remaining clean and user-friendly. Use a light-themed UI design with white backgrounds, blue-700 accents, soft shadows, glassmorphism cards, smooth animations, rounded containers, and high-end financial dashboard aesthetics.
+
+The AI engine should detect and monitor the following risk signals in real time:
+
+* High-volatility stocks
+* Sudden market crashes
+* Pump-and-dump behavior
+* Unusual trading volume spikes
+* Suspicious intraday price movement
+* Abnormal market manipulation patterns
+* Insider-trading-like anomalies based on behavioral pattern recognition
+* Sector-wide panic movements
+* Flash crashes
+* Momentum traps
+* Liquidity risks
+* Fake breakout patterns
+
+The system must calculate a Dynamic AI Risk Score for every stock on a scale from 0–100. The risk score should continuously update based on:
+
+* Volatility index
+* Relative volume
+* Social sentiment fluctuations
+* Technical indicator instability
+* Price acceleration
+* Institutional order imbalance
+* Historical crash similarity
+* AI confidence probability
+* Whale activity
+* News sentiment intensity
+
+Create multiple advanced visualization components including:
+
+1. Risk Score Meters
+   Circular animated gauges displaying current risk levels with color coding:
+
+* Green = Safe
+* Yellow = Moderate
+* Orange = High Risk
+* Red = Extreme Danger
+
+2. AI Anomaly Detection Graphs
+   Interactive machine learning graphs showing unusual stock behavior using spikes, wave distortion patterns, predictive movement overlays, and anomaly clusters.
+
+3. Red Alert Indicators
+   Real-time flashing warning banners for dangerous stocks. Include:
+
+* Pulsing animations
+* Alert sounds
+* “Extreme Volatility Detected”
+* “Possible Manipulation Activity”
+* “Pump-and-Dump Warning”
+
+4. Volatility Heatmaps
+   Build sector-based heatmaps showing:
+
+* Most unstable sectors
+* Rapidly changing stocks
+* Heat intensity based on volatility score
+* Hover interaction with live metrics
+
+5. Risk Radar Animation
+   Create a futuristic radar scanning animation that continuously scans stocks and highlights suspicious market activity in real time.
+
+6. Flash Notification System
+   Push real-time notifications for:
+
+* Sudden crashes
+* High-risk alerts
+* Volume explosions
+* Manipulation suspicion
+* AI anomaly spikes
+
+Add dedicated dashboard sections including:
+
+A. “High Risk Today”
+Display stocks currently considered dangerous by the AI engine. Include:
+
+* Risk score
+* Volatility %
+* Alert reason
+* Trend direction
+* AI confidence indicator
+* Mini live charts
+
+B. “Safest Stocks”
+Show stable low-risk stocks with:
+
+* Stability score
+* Consistent growth trend
+* Low volatility
+* Safe investment badge
+* Institutional confidence rating
+
+C. Dynamic Risk Timeline
+Visualize how stock risk changes throughout the trading day with animated line charts and predictive movement indicators.
+
+D. AI Confidence Engine
+Display confidence percentage for every prediction using futuristic confidence bars and probability indicators.
+
+The system should support:
+
+* Real-time WebSocket updates
+* Multi-timeframe risk analysis
+* Dark-to-light smooth transitions
+* GPU-optimized animations
+* Responsive desktop and mobile layouts
+* Fast-loading data virtualization
+* AI-generated market insights
+* Smart filtering and sorting
+
+The overall design should resemble a fusion of:
+
+* Bloomberg Terminal
+* TradingView
+* Hedge-fund quant dashboards
+* AI cybersecurity monitoring systems
+
+Focus heavily on futuristic financial intelligence aesthetics, smooth interactions, real-time motion, advanced charting, AI-driven visualization, and premium institutional trading software design.

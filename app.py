@@ -704,6 +704,14 @@ def download_file(filename):
 def sentiment():
     return render_template("sentiment.html")
 
+@app.route("/risk")
+def risk():
+    return render_template("risk.html")
+
+@app.route("/portfolio")
+def portfolio():
+    return render_template("portfolio.html")
+
 @app.route("/api/copilot", methods=["POST"])
 def copilot():
     try:

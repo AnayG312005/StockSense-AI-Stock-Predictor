@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StockSense AI — Smart Risk Radar</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root { --blue-700:#1d4ed8; --blue-600:#2563eb; --blue-500:#3b82f6; --blue-50:#eff6ff; --blue-100:#dbeafe; --slate-800:#1e293b; --slate-600:#475569; --slate-400:#94a3b8; --slate-200:#e2e8f0; }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Inter',sans-serif;background:#f8fafc;color:var(--slate-800);}
+  .nav-glass{background:rgba(255,255,255,0.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--slate-200);}
+  .card{background:white;border:1px solid var(--slate-200);border-radius:16px;box-shadow:0 1px 4px rgba(0,0,0,0.06);}
+  .card-hover{transition:all 0.25s;}
+  .card-hover:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.1);}
+  .btn-primary{background:var(--blue-700);color:white;font-family:'Inter',sans-serif;font-weight:600;cursor:pointer;border:none;transition:all 0.2s;}
+  .btn-primary:hover{background:var(--blue-600);}
+  .gradient-text{background:linear-gradient(135deg,var(--blue-700),var(--blue-500));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+  .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;}
+  .badge-red{background:#fef2f2;color:#dc2626;border:1px solid #fecaca;}
+  .badge-amber{background:#fffbeb;color:#d97706;border:1px solid #fde68a;}
+  .badge-green{background:#f0fdf4;color:#059669;border:1px solid #bbf7d0;}
+  .badge-blue{background:var(--blue-50);color:var(--blue-700);border:1px solid var(--blue-100);}
+
+  /* Sidebar */
+  .sidebar{width:220px;min-height:100vh;background:white;border-right:1px solid var(--slate-200);position:fixed;left:0;top:0;z-index:50;display:flex;flex-direction:column;}
+  .sidebar-link{display:flex;align-items:center;gap:10px;padding:9px 14px;border-radius:10px;font-size:13px;font-weight:500;color:var(--slate-600);transition:all 0.15s;}
+  .sidebar-link:hover,.sidebar-link.active{background:var(--blue-50);color:var(--blue-700);}
+  .sidebar-link.active{font-weight:600;}
+  .main-content{margin-left:220px;}
+
+  /* Risk Score Ring */
+  .risk-ring{position:relative;width:130px;height:130px;}
+  .ring-svg{transform:rotate(-90deg);}
+  .ring-track{fill:none;stroke:#f1f5f9;stroke-width:10;}
+  .ring-fill{fill:none;stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset 1.5s ease;}
+
+  /* Alert flash */
+  @keyframes alertFlash{0%,100%{opacity:1}50%{opacity:.5}}
+  .alert-flash{animation:alertFlash 1.5s infinite;}
+
+  /* Radar */
+  @keyframes radarSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+  .radar-sweep{animation:radarSpin 3s linear infinite;transform-origin:center;}
+
+  /* Progress bar */
+  .risk-bar{height:8px;border-radius:4px;transition:width 1.2s ease;}
+
+  /* Pulse */
+  @keyframes pulse2{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.5)}}
+  .live-dot{animation:pulse2 2s infinite;display:inline-block;}
+
+  /* Reveal */
+  .reveal{opacity:0;transform:translateY(20px);transition:all 0.55s ease;}
+  .reveal.visible{opacity:1;transform:translateY(0);}
+
+  /* Score colors */
+  .score-safe{color:#059669;}
+  .score-moderate{color:#d97706;}
+  .score-high{color:#ea580c;}
+  .score-extreme{color:#dc2626;}
+  .ring-safe{stroke:#059669;}
+  .ring-moderate{stroke:#d97706;}
+  .ring-high{stroke:#ea580c;}
+  .ring-extreme{stroke:#dc2626;}
+
+  @media(max-width:768px){.sidebar{transform:translateX(-100%);}.sidebar.open{transform:translateX(0);}.main-content{margin-left:0;}}
+  ::-webkit-scrollbar{width:6px;}
+  ::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px;}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="p-4 border-b" style="border-color:var(--slate-200);">
+    <a href="/" class="flex items-center gap-2">
+      <div class="w-8 h-8 rounded-lg bg-blue-700 flex items-center justify-center text-white text-sm font-bold">S</div>
+      <span class="text-sm font-bold text-slate-800">StockSense <span style="color:var(--blue-700)">AI</span></span>
+    </a>
+  </div>
+  <nav class="flex-1 p-3 space-y-1 mt-2">
+    <a href="/" class="sidebar-link"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>Home</a>
+    <a href="/prediction" class="sidebar-link"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>Predictions</a>
+    <div class="sidebar-link active" style="color:var(--blue-700);background:var(--blue-50);"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>Risk Radar</div>
+    <a href="/portfolio" class="sidebar-link"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>Portfolio</a>
+    <a href="/sentiment" class="sidebar-link"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Sentiment</a>
+  </nav>
+</aside>
+
+<!-- MAIN -->
+<div class="main-content">
+
+  <!-- Top Bar -->
+  <div class="nav-glass sticky top-0 z-40 px-6 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <button class="md:hidden text-slate-500" onclick="document.getElementById('sidebar').classList.toggle('open')">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <h1 class="font-bold text-slate-800 text-base">🛡 Smart Risk Radar</h1>
+    </div>
+    <div class="flex items-center gap-2">
+      <span class="badge badge-red alert-flash">🔴 2 Active Alerts</span>
+      <span class="text-xs text-slate-400 flex items-center gap-1"><span class="live-dot w-2 h-2 rounded-full bg-green-500"></span>Live Scanning</span>
+    </div>
+  </div>
+
+  <div class="p-4 sm:p-6 max-w-7xl mx-auto">
+
+    <!-- Red Alert Banner -->
+    <div class="rounded-2xl p-4 mb-6 flex items-center gap-4 alert-flash reveal" style="background:#fef2f2;border:1.5px solid #fca5a5;">
+      <span class="text-2xl">🚨</span>
+      <div class="flex-1">
+        <div class="font-bold text-red-700 text-sm">EXTREME VOLATILITY DETECTED — TSLA, TSLA options volume up 340%</div>
+        <div class="text-red-500 text-xs mt-0.5">AI Confidence: 91% · Possible Momentum Trap · Last updated: just now</div>
+      </div>
+      <span class="badge badge-red text-xs">CRITICAL</span>
+    </div>
+
+    <!-- Overview KPIs -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div class="card p-5 reveal">
+        <div class="text-xs text-slate-400 mb-1 uppercase tracking-wider">Stocks Scanned</div>
+        <div class="text-3xl font-bold text-blue-700">847</div>
+        <div class="text-xs text-slate-400 mt-1">Last 24 hours</div>
+      </div>
+      <div class="card p-5 reveal" style="transition-delay:.07s">
+        <div class="text-xs text-slate-400 mb-1 uppercase tracking-wider">High Risk</div>
+        <div class="text-3xl font-bold text-red-600">12</div>
+        <div class="text-xs text-red-400 mt-1">↑ 3 from yesterday</div>
+      </div>
+      <div class="card p-5 reveal" style="transition-delay:.14s">
+        <div class="text-xs text-slate-400 mb-1 uppercase tracking-wider">Anomalies</div>
+        <div class="text-3xl font-bold text-amber-600">7</div>
+        <div class="text-xs text-slate-400 mt-1">Unusual activity</div>
+      </div>
+      <div class="card p-5 reveal" style="transition-delay:.21s">
+        <div class="text-xs text-slate-400 mb-1 uppercase tracking-wider">Safe Stocks</div>
+        <div class="text-3xl font-bold text-emerald-600">614</div>
+        <div class="text-xs text-emerald-500 mt-1">Low risk zone</div>
+      </div>
+    </div>
+
+    <!-- Risk Radar + Risk Scores Row -->
+    <div class="grid lg:grid-cols-3 gap-6 mb-8">
+
+      <!-- Radar Animation -->
+      <div class="card p-6 flex flex-col items-center reveal">
+        <h3 class="font-semibold text-slate-700 text-sm mb-4 uppercase tracking-wider">AI Risk Radar</h3>
+        <div class="relative w-48 h-48">
+          <svg viewBox="0 0 200 200" class="w-full h-full">
+            <!-- Circles -->
+            <circle cx="100" cy="100" r="90" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+            <circle cx="100" cy="100" r="65" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+            <circle cx="100" cy="100" r="40" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+            <circle cx="100" cy="100" r="15" fill="#dbeafe"/>
+            <!-- Cross lines -->
+            <line x1="100" y1="10" x2="100" y2="190" stroke="#e2e8f0" stroke-width="1"/>
+            <line x1="10" y1="100" x2="190" y2="100" stroke="#e2e8f0" stroke-width="1"/>
+            <!-- Sweep -->
+            <g class="radar-sweep">
+              <path d="M 100 100 L 100 10 A 90 90 0 0 1 177 145 Z" fill="url(#sweepGrad)" opacity="0.7"/>
+            </g>
+            <defs>
+              <radialGradient id="sweepGrad" cx="0%" cy="0%" r="100%">
+                <stop offset="0%" stop-color="#2563eb" stop-opacity="0.8"/>
+                <stop offset="100%" stop-color="#2563eb" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+            <!-- Blips -->
+            <circle cx="130" cy="45" r="5" fill="#dc2626" opacity="0.8"><animate attributeName="opacity" values="1;0.3;1" dur="1.2s" repeatCount="indefinite"/></circle>
+            <circle cx="60" cy="80" r="4" fill="#d97706" opacity="0.8"><animate attributeName="opacity" values="1;0.3;1" dur="1.8s" repeatCount="indefinite"/></circle>
+            <circle cx="155" cy="120" r="3" fill="#dc2626" opacity="0.7"><animate attributeName="opacity" values="1;0.3;1" dur="0.9s" repeatCount="indefinite"/></circle>
+            <circle cx="75" cy="155" r="3" fill="#059669" opacity="0.6"><animate attributeName="opacity" values="1;0.3;1" dur="2.2s" repeatCount="indefinite"/></circle>
+          </svg>
+        </div>
+        <div class="mt-4 flex gap-3 text-xs">
+          <div class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-red-500 inline-block"></span>High Risk</div>
+          <div class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>Moderate</div>
+          <div class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>Safe</div>
+        </div>
+      </div>
+
+      <!-- Top Risk Scores -->
+      <div class="card p-6 lg:col-span-2 reveal" style="transition-delay:.1s">
+        <h3 class="font-semibold text-slate-700 text-sm mb-4 uppercase tracking-wider">AI Risk Score Meters</h3>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-4" id="riskMeters">
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="grid lg:grid-cols-2 gap-6 mb-8">
+      <div class="card p-5 reveal">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-semibold text-slate-700 text-sm uppercase tracking-wider">Volatility Trend (7 Days)</h3>
+          <span class="badge badge-red">↑ Rising</span>
+        </div>
+        <canvas id="volatilityChart" height="180"></canvas>
+      </div>
+      <div class="card p-5 reveal" style="transition-delay:.1s">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-semibold text-slate-700 text-sm uppercase tracking-wider">Anomaly Detection</h3>
+          <span class="badge badge-amber">7 Flagged</span>
+        </div>
+        <canvas id="anomalyChart" height="180"></canvas>
+      </div>
+    </div>
+
+    <!-- Volatility Heatmap -->
+    <div class="card p-6 mb-8 reveal">
+      <h3 class="font-semibold text-slate-700 text-sm mb-5 uppercase tracking-wider">Sector Volatility Heatmap</h3>
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3" id="sectorHeat"></div>
+    </div>
+
+    <!-- High Risk + Safe Stocks -->
+    <div class="grid lg:grid-cols-2 gap-6 mb-8">
+
+      <!-- High Risk Today -->
+      <div class="card overflow-hidden reveal">
+        <div class="px-5 py-4 border-b flex items-center justify-between" style="border-color:var(--slate-200);background:#fef2f2;">
+          <h3 class="font-bold text-red-700 text-sm">🔴 High Risk Today</h3>
+          <span class="badge badge-red">12 stocks</span>
+        </div>
+        <div class="divide-y" style="divide-color:var(--slate-100);" id="highRiskList"></div>
+      </div>
+
+      <!-- Safest Stocks -->
+      <div class="card overflow-hidden reveal" style="transition-delay:.1s">
+        <div class="px-5 py-4 border-b flex items-center justify-between" style="border-color:var(--slate-200);background:#f0fdf4;">
+          <h3 class="font-bold text-emerald-700 text-sm">🟢 Safest Stocks</h3>
+          <span class="badge badge-green">614 stable</span>
+        </div>
+        <div class="divide-y" style="divide-color:var(--slate-100);" id="safeList"></div>
+      </div>
+
+    </div>
+
+    <!-- Alert Feed -->
+    <div class="card p-6 reveal">
+      <h3 class="font-semibold text-slate-700 text-sm mb-4 uppercase tracking-wider">🔔 Live Alert Feed</h3>
+      <div class="space-y-3" id="alertFeed"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// Reveal
+const obs=new IntersectionObserver(e=>e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('visible');}),{threshold:0.1});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+// Risk meters data
+const meters = [
+  {sym:'TSLA',score:88,label:'Extreme Risk',cls:'ring-extreme score-extreme'},
+  {sym:'ADANIENT.NS',score:74,label:'High Risk',cls:'ring-high score-high'},
+  {sym:'YESBANK.NS',score:69,label:'High Risk',cls:'ring-high score-high'},
+  {sym:'RELIANCE.NS',score:28,label:'Low Risk',cls:'ring-safe score-safe'},
+  {sym:'HDFCBANK.NS',score:22,label:'Safe',cls:'ring-safe score-safe'},
+  {sym:'INFY.NS',score:35,label:'Moderate',cls:'ring-moderate score-moderate'},
+];
+const circumf = 2*Math.PI*52;
+const mCont = document.getElementById('riskMeters');
+meters.forEach(m => {
+  const offset = circumf - (m.score/100)*circumf;
+  const div = document.createElement('div');
+  div.className='text-center';
+  div.innerHTML=`
+    <svg class="ring-svg mx-auto" width="90" height="90" viewBox="0 0 120 120">
+      <circle class="ring-track" cx="60" cy="60" r="52"/>
+      <circle class="ring-fill ${m.cls.split(' ')[0]}" cx="60" cy="60" r="52" stroke-dasharray="${circumf}" stroke-dashoffset="${offset}" id="ring_${m.sym.replace('.','_')}"/>
+    </svg>
+    <div class="text-lg font-bold ${m.cls.split(' ')[1]} -mt-12 relative z-10">${m.score}</div>
+    <div class="text-xs font-bold text-slate-700 mt-10">${m.sym}</div>
+    <div class="text-xs text-slate-400">${m.label}</div>`;
+  mCont.appendChild(div);
+});
+
+// Volatility chart
+const vCtx = document.getElementById('volatilityChart').getContext('2d');
+const days7 = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+new Chart(vCtx, {
+  type:'line',
+  data:{labels:days7,datasets:[
+    {label:'High Vol',data:[18,22,35,28,45,52,61],borderColor:'#dc2626',backgroundColor:'rgba(220,38,38,0.07)',fill:true,tension:0.4,pointRadius:3,pointBackgroundColor:'#dc2626'},
+    {label:'Avg Vol',data:[12,14,16,14,20,22,26],borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,0.05)',fill:true,tension:0.4,pointRadius:3,pointBackgroundColor:'#2563eb'},
+  ]},
+  options:{responsive:true,maintainAspectRatio:false,scales:{x:{ticks:{color:'#94a3b8',font:{size:11}},grid:{color:'rgba(0,0,0,0.04)'}},y:{ticks:{color:'#94a3b8',font:{size:11}},grid:{color:'rgba(0,0,0,0.04)'}}},plugins:{legend:{labels:{color:'#64748b',font:{size:11}}}}}
+});
+
+// Anomaly chart
+const aCtx = document.getElementById('anomalyChart').getContext('2d');
+new Chart(aCtx, {
+  type:'bar',
+  data:{labels:['Pump-Dump','Vol Spike','Whale','Breakout Fake','Momentum Trap','Insider Signal','Liquidity'],
+    datasets:[{data:[3,7,2,4,5,1,3],backgroundColor:['#dc2626','#ea580c','#7c3aed','#d97706','#dc2626','#ea580c','#d97706'],borderRadius:6}]},
+  options:{responsive:true,maintainAspectRatio:false,scales:{x:{ticks:{color:'#94a3b8',font:{size:10}},grid:{display:false}},y:{ticks:{color:'#94a3b8',font:{size:11}},grid:{color:'rgba(0,0,0,0.04)'}}},plugins:{legend:{display:false}}}
+});
+
+// Sector heatmap
+const sectors=[
+  {name:'Crypto-linked',risk:92,cls:'bg-red-100 border-red-300 text-red-700'},
+  {name:'Micro-caps',risk:78,cls:'bg-orange-100 border-orange-300 text-orange-700'},
+  {name:'Commodities',risk:62,cls:'bg-amber-100 border-amber-300 text-amber-700'},
+  {name:'Telecom',risk:48,cls:'bg-yellow-100 border-yellow-300 text-yellow-700'},
+  {name:'Auto',risk:45,cls:'bg-yellow-100 border-yellow-300 text-yellow-700'},
+  {name:'IT/Tech',risk:32,cls:'bg-green-100 border-green-300 text-green-700'},
+  {name:'Banking',risk:24,cls:'bg-emerald-100 border-emerald-300 text-emerald-700'},
+  {name:'FMCG',risk:18,cls:'bg-emerald-100 border-emerald-300 text-emerald-700'},
+  {name:'Pharma',risk:28,cls:'bg-green-100 border-green-300 text-green-700'},
+  {name:'Energy',risk:38,cls:'bg-yellow-100 border-yellow-300 text-yellow-700'},
+];
+const heat=document.getElementById('sectorHeat');
+sectors.forEach(s=>{
+  const d=document.createElement('div');
+  d.className=`${s.cls} border rounded-xl p-3 text-center`;
+  d.innerHTML=`<div class="font-semibold text-sm mb-1">${s.name}</div><div class="text-2xl font-bold mb-0.5">${s.risk}</div><div class="text-xs">${s.risk>70?'🔴 High':s.risk>45?'🟡 Medium':'🟢 Low'}</div>`;
+  heat.appendChild(d);
+});
+
+// High risk list
+const highRisks=[
+  {sym:'TSLA',score:88,vol:'↑ 34.2%',reason:'Volume spike 340%',trend:'down',ai:'Momentum Trap'},
+  {sym:'ADANIENT.NS',score:74,vol:'↑ 22.1%',reason:'Unusual sell pressure',trend:'down',ai:'Whale Activity'},
+  {sym:'YESBANK.NS',score:69,vol:'↑ 18.7%',reason:'News-driven spike',trend:'up',ai:'Pump-Dump Risk'},
+  {sym:'PCJEWELLER.NS',score:65,vol:'↑ 45.3%',reason:'Abnormal pre-market',trend:'up',ai:'Breakout Fake'},
+  {sym:'SUZLON.NS',score:61,vol:'↑ 29.0%',reason:'Social media surge',trend:'up',ai:'Manipulation Warning'},
+];
+const hrList=document.getElementById('highRiskList');
+highRisks.forEach(s=>{
+  const d=document.createElement('div');
+  d.className='px-5 py-3 flex items-center gap-3 hover:bg-red-50 transition-colors';
+  d.innerHTML=`<div class="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center font-bold text-xs bg-red-100 text-red-700 border border-red-200">${s.score}</div>
+    <div class="flex-1 min-w-0"><div class="font-semibold text-slate-800 text-sm">${s.sym}</div><div class="text-xs text-slate-400 truncate">${s.reason}</div></div>
+    <div class="text-right flex-shrink-0"><div class="text-xs font-bold text-red-600">${s.vol}</div><div class="badge badge-red text-xs mt-1">${s.ai}</div></div>`;
+  hrList.appendChild(d);
+});
+
+// Safe list
+const safeStocks=[
+  {sym:'HDFCBANK.NS',score:22,stab:'Stable 6M',growth:'+8.4% YTD',inst:'High'},
+  {sym:'TCS.NS',score:19,stab:'Stable 1Y',growth:'+12.1% YTD',inst:'Very High'},
+  {sym:'INFY.NS',score:25,stab:'Stable 6M',growth:'+6.8% YTD',inst:'High'},
+  {sym:'RELIANCE.NS',score:28,stab:'Stable 3M',growth:'+15.2% YTD',inst:'Very High'},
+  {sym:'MSFT',score:16,stab:'Stable 1Y',growth:'+18.7% YTD',inst:'Very High'},
+];
+const safeList=document.getElementById('safeList');
+safeStocks.forEach(s=>{
+  const d=document.createElement('div');
+  d.className='px-5 py-3 flex items-center gap-3 hover:bg-green-50 transition-colors';
+  d.innerHTML=`<div class="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center font-bold text-xs bg-emerald-100 text-emerald-700 border border-emerald-200">${s.score}</div>
+    <div class="flex-1 min-w-0"><div class="font-semibold text-slate-800 text-sm">${s.sym}</div><div class="text-xs text-slate-400">${s.stab} · Inst: ${s.inst}</div></div>
+    <div class="text-right flex-shrink-0"><div class="text-xs font-bold text-emerald-600">${s.growth}</div><div class="badge badge-green text-xs mt-1">Safe 🟢</div></div>`;
+  safeList.appendChild(d);
+});
+
+// Alert feed
+const alerts=[
+  {icon:'🚨',msg:'Extreme Volatility Detected — TSLA showing 340% volume surge above 30-day average',time:'2 min ago',type:'critical',cls:'border-red-200 bg-red-50'},
+  {icon:'⚠️',msg:'Manipulation Risk Warning — PCJEWELLER.NS pre-market activity flagged by AI',time:'8 min ago',type:'high',cls:'border-amber-200 bg-amber-50'},
+  {icon:'📊',msg:'Pump-and-Dump Activity Suspected — SUZLON.NS social media mentions up 1200%',time:'15 min ago',type:'high',cls:'border-amber-200 bg-amber-50'},
+  {icon:'🔍',msg:'Unusual Volume Spike — ADANIENT.NS block deal of ₹2,400 Cr detected',time:'22 min ago',type:'moderate',cls:'border-blue-200 bg-blue-50'},
+  {icon:'📉',msg:'Crash Probability Increasing — Nifty Midcap 150 showing VIX correlation anomaly',time:'35 min ago',type:'moderate',cls:'border-blue-200 bg-blue-50'},
+];
+const aFeed=document.getElementById('alertFeed');
+alerts.forEach(a=>{
+  const d=document.createElement('div');
+  d.className=`flex items-start gap-3 p-3 rounded-xl border ${a.cls}`;
+  d.innerHTML=`<span class="text-xl flex-shrink-0">${a.icon}</span><div class="flex-1"><p class="text-sm text-slate-700 font-medium">${a.msg}</p><span class="text-xs text-slate-400">${a.time}</span></div>`;
+  aFeed.appendChild(d);
+});
+</script>
+</body>
+</html>

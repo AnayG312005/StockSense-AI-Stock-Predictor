@@ -1,0 +1,263 @@
+# Combined Prompt — Smart Risk Radar System + Portfolio Intelligence System with Premium UI Redesign
+
+Design and develop a next-generation AI-powered financial intelligence platform by combining an advanced “Smart Risk Radar System” with a futuristic “Portfolio Intelligence System.” The platform should feel like a premium institutional-grade hedge-fund analytics dashboard used by professional traders, portfolio managers, and quantitative investment firms.
+
+The entire website must be completely redesigned with a modern light-themed UI using a premium combination of:
+
+* White backgrounds
+* Blue-700 primary accents
+* Soft blue gradients
+* Glassmorphism effects
+* Elegant shadows
+* Rounded modern cards
+* Smooth transitions
+* Minimalistic typography
+* Premium fintech aesthetics
+
+The interface should feel futuristic, intelligent, luxurious, data-rich, and highly interactive while maintaining clean readability and enterprise-level professionalism. The overall experience should resemble a fusion of Bloomberg Terminal, TradingView, BlackRock analytics dashboards, and modern AI-powered fintech SaaS platforms.
+
+# Feature 1 — Smart Risk Radar System
+
+Build an advanced AI-powered market risk detection engine capable of continuously monitoring live stock market behavior, trading anomalies, volatility patterns, institutional activity, and suspicious market movements in real time.
+
+The AI Risk Engine should intelligently detect:
+
+* High-volatility stocks
+* Sudden market crashes
+* Pump-and-dump schemes
+* Suspicious trading behavior
+* Insider-trading-like anomalies
+* Unusual volume spikes
+* Fake breakout patterns
+* Whale activity
+* Momentum traps
+* Sector-wide panic movement
+* Liquidity risk
+* Extreme price fluctuations
+
+The system should generate a Dynamic AI Risk Score from 0–100 for every stock using:
+
+* Historical volatility
+* Relative volume
+* Sentiment instability
+* Technical indicator stress
+* Market momentum distortion
+* Institutional order imbalance
+* Historical crash similarity
+* Price acceleration
+* AI anomaly confidence
+* Liquidity fluctuation
+
+Create highly interactive visual components including:
+
+### Risk Score Meters
+
+Animated circular gauges with:
+
+* Green = Safe
+* Yellow = Moderate
+* Orange = High Risk
+* Red = Extreme Danger
+
+### AI Anomaly Detection Graphs
+
+Interactive AI graphs visualizing:
+
+* Abnormal market movement
+* Risk spikes
+* Pattern distortions
+* Predictive crash signals
+* Behavioral anomaly clusters
+
+### Volatility Heatmaps
+
+Create sector-based heatmaps showing:
+
+* Most unstable sectors
+* Rapidly changing stocks
+* Volatility intensity
+* Capital movement shifts
+
+### Risk Radar Animation
+
+Develop a futuristic radar scanner continuously scanning stocks and highlighting suspicious activity in real time.
+
+### Red Alert Notification System
+
+Display flashing real-time alerts such as:
+
+* “Extreme Volatility Detected”
+* “Manipulation Risk Warning”
+* “Pump-and-Dump Activity Suspected”
+* “Crash Probability Increasing”
+
+Add dedicated sections including:
+
+### High Risk Today
+
+Display dangerous stocks with:
+
+* Risk score
+* AI confidence
+* Volatility %
+* Alert reasons
+* Trend direction
+* Mini live charts
+
+### Safest Stocks
+
+Display stable low-risk stocks with:
+
+* Stability score
+* Low volatility
+* Long-term growth potential
+* Institutional confidence
+* Safe investment indicators
+
+# Feature 2 — Portfolio Intelligence System
+
+Redesign portfolio management into a futuristic AI-powered wealth intelligence platform capable of analyzing investment performance, diversification quality, future growth potential, and risk exposure.
+
+Create a sophisticated Portfolio Intelligence Dashboard containing:
+
+### AI Portfolio Health Score
+
+Generate an intelligent overall portfolio score using:
+
+* Portfolio stability
+* Diversification quality
+* Risk exposure
+* Sector balance
+* Long-term sustainability
+* Volatility control
+* Asset correlation
+
+Display the score using futuristic animated radial meters and AI confidence indicators.
+
+### Diversification Analysis
+
+Analyze how diversified the portfolio is across:
+
+* Sectors
+* Asset classes
+* Market capitalization
+* Risk categories
+* Geographic exposure
+
+Use interactive donut charts, treemaps, and allocation heatmaps.
+
+### Risk-to-Reward Ratio Engine
+
+Build AI models calculating:
+
+* Expected return
+* Downside probability
+* Drawdown risk
+* Profit potential
+* Risk-adjusted performance
+
+Visualize using:
+
+* Dynamic ratio meters
+* Predictive AI graphs
+* Probability curves
+* Scenario simulation charts
+
+### Profit/Loss Forecasting
+
+Use predictive AI models to forecast:
+
+* Future portfolio growth
+* Profit probability
+* Potential losses
+* Market correction impact
+* Long-term wealth projections
+
+Create:
+
+* AI future wealth projection graphs
+* Compound growth simulations
+* Forecast timelines
+* Interactive prediction charts
+
+### Asset Allocation Visualization
+
+Display portfolio allocation using:
+
+* Donut charts
+* Treemaps
+* Interactive allocation cards
+* Sector exposure graphs
+* Risk-distribution visuals
+
+### AI Investment Recommendations
+
+Generate intelligent AI-generated portfolio suggestions such as:
+
+* “Reduce exposure in tech sector”
+* “Portfolio risk increasing”
+* “Diversification recommended”
+* “Healthcare allocation underweight”
+* “Energy sector momentum rising”
+* “Risk-adjusted return declining”
+* “Defensive assets recommended”
+
+Display recommendations using premium AI insight cards with:
+
+* Confidence percentages
+* Impact indicators
+* Suggested actions
+* AI reasoning summaries
+
+# Dashboard & UI Redesign
+
+The entire dashboard should use a premium white + blue-700 design system featuring:
+
+* Floating analytics cards
+* Glassmorphism sidebars
+* Animated widgets
+* Smooth hover interactions
+* Premium spacing
+* Institutional data layout
+* Soft gradients
+* Live ticker animations
+* Clean chart hierarchy
+
+Include:
+
+* Left sidebar navigation
+* AI assistant panel
+* Notification center
+* Expandable analytics workspace
+* Smart search functionality
+* Real-time stock tracking
+* Watchlist management
+* Multi-tab dashboards
+
+Integrate advanced chart systems including:
+
+* Candlestick charts
+* Line graphs
+* Area charts
+* Donut charts
+* Heatmaps
+* Treemaps
+* Portfolio projection graphs
+* AI prediction overlays
+* Volatility charts
+* Technical indicator layers
+
+The platform must support:
+
+* Real-time WebSocket updates
+* Multi-stock comparison
+* Responsive chart zooming
+* Interactive filtering
+* Date range selection
+* Mobile responsiveness
+* Tablet optimization
+* GPU-optimized animations
+* Real-time synchronization
+* AI-powered insights
+
+The final experience should feel like a futuristic AI-driven institutional trading and portfolio intelligence platform built for hedge funds, professional investors, and advanced financial analytics teams. Focus heavily on premium fintech aesthetics, intelligent visualization, real-time data storytelling, and elegant light-themed UI powered by white and blue-700 color combinations.
