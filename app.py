@@ -6,6 +6,10 @@ import logging
 import warnings
 import contextlib
 import datetime as dt
+import json
+import re
+import random
+import requests
 import numpy as np
 import pandas as pd
 import matplotlib
@@ -15,11 +19,18 @@ import matplotlib.pyplot as plt
 
 import yfinance as yf
 from sklearn.preprocessing import MinMaxScaler
-from flask import Flask, render_template, request, send_file, jsonify
+from flask import Flask, render_template, request, send_file, jsonify, redirect, url_for, session, make_response
+from functools import wraps
 from tensorflow.keras.models import load_model
 from openai import OpenAI
 from tensorflow.keras.layers import InputLayer
 from dotenv import load_dotenv
+
+try:
+    import jwt
+    JWT_AVAILABLE = True
+except ImportError:
+    JWT_AVAILABLE = False
 
 # =================================================
 # BASIC APP SETUP
@@ -34,8 +45,89 @@ START_DATE = os.getenv("START_DATE", "2010-01-01")
 
 app = Flask(__name__)
 app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 0
+app.secret_key = os.getenv("SESSION_SECRET", os.urandom(24))
 
 model = None
+
+# =================================================
+# CLERK AUTH CONFIG
+# =================================================
+CLERK_PUBLISHABLE_KEY = os.getenv("CLERK_PUBLISHABLE_KEY", "")
+CLERK_SECRET_KEY = os.getenv("CLERK_SECRET_KEY", "")
+
+def _get_clerk_frontend_api():
+    pk = CLERK_PUBLISHABLE_KEY
+    if pk.startswith("pk_test_"):
+        domain = pk[len("pk_test_"):]
+        domain = domain.rstrip("$")
+        import base64
+        try:
+            decoded = base64.b64decode(domain + "==").decode("utf-8").rstrip("\x00")
+            return decoded
+        except Exception:
+            pass
+    if pk.startswith("pk_live_"):
+        domain = pk[len("pk_live_"):]
+        domain = domain.rstrip("$")
+        import base64
+        try:
+            decoded = base64.b64decode(domain + "==").decode("utf-8").rstrip("\x00")
+            return decoded
+        except Exception:
+            pass
+    return "clerk.accounts.dev"
+
+CLERK_FRONTEND_API = _get_clerk_frontend_api()
+
+_clerk_jwks_cache = {"keys": None, "fetched_at": 0}
+
+def _get_clerk_jwks():
+    now = time.time()
+    if _clerk_jwks_cache["keys"] and now - _clerk_jwks_cache["fetched_at"] < 3600:
+        return _clerk_jwks_cache["keys"]
+    try:
+        url = f"https://{CLERK_FRONTEND_API}/.well-known/jwks.json"
+        resp = requests.get(url, timeout=5)
+        if resp.status_code == 200:
+            _clerk_jwks_cache["keys"] = resp.json().get("keys", [])
+            _clerk_jwks_cache["fetched_at"] = now
+            return _clerk_jwks_cache["keys"]
+    except Exception as e:
+        print(f"JWKS fetch error: {e}")
+    return []
+
+def _verify_clerk_token(token):
+    if not token or not JWT_AVAILABLE:
+        return None
+    try:
+        from jwt.algorithms import RSAAlgorithm
+        keys = _get_clerk_jwks()
+        header = jwt.get_unverified_header(token)
+        kid = header.get("kid")
+        matching = next((k for k in keys if k.get("kid") == kid), None) if kid else (keys[0] if keys else None)
+        if not matching:
+            return None
+        public_key = RSAAlgorithm.from_jwk(json.dumps(matching))
+        payload = jwt.decode(token, public_key, algorithms=["RS256"], options={"verify_exp": True})
+        return payload
+    except Exception as e:
+        print(f"Token verification error: {e}")
+        return None
+
+def get_current_user():
+    token = request.cookies.get("__session") or request.headers.get("Authorization", "").replace("Bearer ", "")
+    if token:
+        return _verify_clerk_token(token)
+    return None
+
+def require_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        user = get_current_user()
+        if not user:
+            return redirect(url_for("login_page"))
+        return f(*args, **kwargs)
+    return decorated
 
 # Reduce console noise from yfinance / urllib3
 warnings.filterwarnings("ignore")
@@ -670,13 +762,20 @@ def process_prediction(stock_input, template="prediction.html"):
 # =================================================
 # ROUTES
 # =================================================
+def _clerk_ctx():
+    return {
+        "clerk_publishable_key": CLERK_PUBLISHABLE_KEY,
+        "clerk_frontend_api": CLERK_FRONTEND_API,
+    }
+
 @app.route("/", methods=["GET", "POST"])
 def home():
     if request.method == "POST":
         return process_prediction(request.form.get("stock"))
-    return render_template("home.html")
+    return render_template("home.html", **_clerk_ctx())
 
 @app.route("/prediction", methods=["GET", "POST"])
+@require_auth
 def prediction():
     if request.method == "POST":
         return process_prediction(request.form.get("stock"))
@@ -690,7 +789,8 @@ def prediction():
         dataset_link=None,
         plot_path_ema_20_50=None,
         plot_path_ema_100_200=None,
-        plot_path_prediction=None
+        plot_path_prediction=None,
+        **_clerk_ctx()
     )
 
 @app.route("/download/<filename>")
@@ -700,17 +800,292 @@ def download_file(filename):
         return send_file(path, as_attachment=True)
     return "File not found", 404
 
+@app.route("/login")
+def login_page():
+    user = get_current_user()
+    if user:
+        return redirect(url_for("home"))
+    return render_template("login.html",
+        clerk_publishable_key=CLERK_PUBLISHABLE_KEY,
+        clerk_frontend_api=CLERK_FRONTEND_API)
+
+@app.route("/sso-callback")
+def sso_callback():
+    return render_template("sso_callback.html",
+        clerk_publishable_key=CLERK_PUBLISHABLE_KEY,
+        clerk_frontend_api=CLERK_FRONTEND_API)
+
 @app.route("/sentiment")
+@require_auth
 def sentiment():
-    return render_template("sentiment.html")
+    return render_template("sentiment.html", **_clerk_ctx())
 
 @app.route("/risk")
+@require_auth
 def risk():
-    return render_template("risk.html")
+    return render_template("risk.html", **_clerk_ctx())
 
 @app.route("/portfolio")
+@require_auth
 def portfolio():
-    return render_template("portfolio.html")
+    return render_template("portfolio.html", **_clerk_ctx())
+
+# =================================================
+# REAL-TIME DATA APIs
+# =================================================
+
+def _safe_float(v, decimals=2):
+    try:
+        return round(float(v), decimals) if v is not None and not (isinstance(v, float) and (v != v)) else None
+    except:
+        return None
+
+def _fetch_live_quote(ticker):
+    try:
+        tk = yf.Ticker(ticker)
+        info = tk.fast_info
+        hist = tk.history(period="5d", interval="1d")
+        price = _safe_float(getattr(info, "last_price", None))
+        prev_close = _safe_float(getattr(info, "previous_close", None))
+        change_pct = round((price - prev_close) / prev_close * 100, 2) if price and prev_close else None
+        vol = getattr(info, "three_month_average_volume", None)
+        last_vol = getattr(info, "last_volume", None)
+        rel_vol = round(last_vol / vol, 2) if vol and last_vol and vol > 0 else 1.0
+        highs = hist["High"].dropna().tolist()[-5:] if len(hist) >= 2 else []
+        lows = hist["Low"].dropna().tolist()[-5:] if len(hist) >= 2 else []
+        closes = hist["Close"].dropna().tolist()[-5:] if len(hist) >= 2 else []
+        return {
+            "ticker": ticker,
+            "price": price,
+            "prev_close": prev_close,
+            "change_pct": change_pct,
+            "volume": int(last_vol) if last_vol else None,
+            "avg_volume": int(vol) if vol else None,
+            "rel_volume": rel_vol,
+            "highs": highs,
+            "lows": lows,
+            "closes": closes,
+            "market_cap": getattr(info, "market_cap", None),
+        }
+    except Exception as e:
+        return {"ticker": ticker, "error": str(e)}
+
+def _compute_risk_score(q):
+    score = 0
+    rel_vol = q.get("rel_volume", 1.0) or 1.0
+    change_pct = abs(q.get("change_pct") or 0)
+    closes = q.get("closes", [])
+    if rel_vol > 3: score += 30
+    elif rel_vol > 2: score += 20
+    elif rel_vol > 1.5: score += 10
+    if change_pct > 8: score += 30
+    elif change_pct > 5: score += 20
+    elif change_pct > 3: score += 10
+    if len(closes) >= 3:
+        std = pd.Series(closes).pct_change().std()
+        if std: score += min(int(std * 500), 30)
+    if q.get("change_pct", 0) and q["change_pct"] > 0 and rel_vol > 2.5: score += 10
+    return min(score, 100)
+
+@app.route("/api/live-ticker")
+def api_live_ticker():
+    tickers = ["RELIANCE.NS", "TCS.NS", "INFY.NS", "HDFCBANK.NS", "AAPL", "TSLA", "GOOGL", "MSFT", "SBIN.NS", "WIPRO.NS"]
+    results = []
+    for t in tickers:
+        try:
+            tk = yf.Ticker(t)
+            fi = tk.fast_info
+            price = _safe_float(getattr(fi, "last_price", None))
+            prev = _safe_float(getattr(fi, "previous_close", None))
+            chg = round((price - prev) / prev * 100, 2) if price and prev else 0
+            results.append({"ticker": t, "price": price, "change_pct": chg})
+        except:
+            results.append({"ticker": t, "price": None, "change_pct": 0})
+    return jsonify(results)
+
+@app.route("/api/risk-data")
+@require_auth
+def api_risk_data():
+    watchlist = ["TSLA", "ADANIENT.NS", "YESBANK.NS", "RELIANCE.NS", "HDFCBANK.NS", "INFY.NS", "TCS.NS", "SBIN.NS", "AAPL", "WIPRO.NS"]
+    results = []
+    for t in watchlist:
+        q = _fetch_live_quote(t)
+        if "error" in q:
+            continue
+        score = _compute_risk_score(q)
+        chg = q.get("change_pct") or 0
+        rel_vol = q.get("rel_volume") or 1.0
+        if score >= 70: label, badge = "Extreme Risk", "ring-extreme score-extreme"
+        elif score >= 50: label, badge = "High Risk", "ring-high score-high"
+        elif score >= 30: label, badge = "Moderate", "ring-moderate score-moderate"
+        else: label, badge = "Safe", "ring-safe score-safe"
+        results.append({
+            "ticker": t, "score": score, "label": label, "badge": badge,
+            "change_pct": chg, "rel_volume": rel_vol,
+            "price": q.get("price"),
+        })
+    results.sort(key=lambda x: x["score"], reverse=True)
+    high_risk = [r for r in results if r["score"] >= 50]
+    safe = [r for r in results if r["score"] < 30]
+    kpis = {
+        "scanned": len(results),
+        "high_risk": len(high_risk),
+        "anomalies": len([r for r in results if r.get("rel_volume", 1) > 2]),
+        "safe": len(safe),
+    }
+    volatility_series = []
+    for r in results[:5]:
+        closes = _fetch_live_quote(r["ticker"]).get("closes", [])
+        if len(closes) >= 2:
+            pct_changes = [abs(closes[i]/closes[i-1]-1)*100 for i in range(1, len(closes))]
+            volatility_series.append({"ticker": r["ticker"], "vol": round(sum(pct_changes)/len(pct_changes), 2)})
+    sector_heat = []
+    sectors = [
+        ("Banking", ["HDFCBANK.NS", "ICICIBANK.NS", "SBIN.NS"]),
+        ("IT/Tech", ["TCS.NS", "INFY.NS", "WIPRO.NS"]),
+        ("Energy", ["RELIANCE.NS"]),
+        ("Auto", ["MARUTI.NS", "TATAMOTORS.NS"]),
+        ("Adani Group", ["ADANIENT.NS", "ADANIPORTS.NS"]),
+    ]
+    for sector_name, tickers_list in sectors:
+        matched = [r for r in results if r["ticker"] in tickers_list]
+        avg_score = round(sum(x["score"] for x in matched) / len(matched), 0) if matched else 50
+        sector_heat.append({"name": sector_name, "score": int(avg_score)})
+    return jsonify({
+        "kpis": kpis, "stocks": results, "high_risk": high_risk[:5],
+        "safe": safe[:5], "sector_heat": sector_heat,
+        "volatility_series": volatility_series,
+    })
+
+@app.route("/api/sentiment-data")
+@require_auth
+def api_sentiment_data():
+    tickers = ["RELIANCE.NS", "TCS.NS", "HDFCBANK.NS", "INFY.NS", "SBIN.NS", "AAPL", "TSLA", "MSFT"]
+    bullish = 0
+    bearish = 0
+    total = 0
+    sector_scores = {}
+    sector_map = {
+        "RELIANCE.NS": "Energy", "TCS.NS": "IT/Tech", "HDFCBANK.NS": "Banking",
+        "INFY.NS": "IT/Tech", "SBIN.NS": "Banking", "AAPL": "US Tech",
+        "TSLA": "US Tech", "MSFT": "US Tech",
+    }
+    signals = []
+    for t in tickers:
+        q = _fetch_live_quote(t)
+        if "error" in q:
+            continue
+        chg = q.get("change_pct") or 0
+        total += 1
+        if chg > 0.5:
+            bullish += 1
+        elif chg < -0.5:
+            bearish += 1
+        sector = sector_map.get(t, "Other")
+        sector_scores.setdefault(sector, []).append(chg)
+        direction = "positive" if chg > 0 else "negative" if chg < 0 else "neutral"
+        signals.append({
+            "ticker": t, "change_pct": chg, "price": q.get("price"),
+            "direction": direction, "sector": sector,
+        })
+    bull_pct = round(bullish / total * 100) if total else 68
+    bear_pct = round(bearish / total * 100) if total else 32
+    neutral_pct = 100 - bull_pct - bear_pct
+    if bull_pct > 60: mood, mood_icon, mood_label = "Bullish", "😤", "Bullish"
+    elif bear_pct > 50: mood, mood_icon, mood_label = "Bearish", "😰", "Bearish"
+    else: mood, mood_icon, mood_label = "Neutral", "😐", "Neutral"
+    fg_index = min(100, max(0, round(bull_pct * 1.1 - bear_pct * 0.5)))
+    sector_sentiment = []
+    for sector, changes in sector_scores.items():
+        avg = sum(changes) / len(changes) if changes else 0
+        val = min(100, max(0, int(50 + avg * 5)))
+        sector_sentiment.append({"name": sector, "val": val, "avg_change": round(avg, 2)})
+    history = []
+    try:
+        bench = yf.Ticker("^NSEI")
+        hist = bench.history(period="30d", interval="1d")
+        if len(hist) < 5:
+            bench = yf.Ticker("SPY")
+            hist = bench.history(period="30d", interval="1d")
+        closes = hist["Close"].dropna().tolist()
+        for i, c in enumerate(closes):
+            if i == 0:
+                history.append({"bull": 50, "bear": 50})
+            else:
+                chg = (c - closes[i-1]) / closes[i-1] * 100
+                b = min(95, max(5, 50 + chg * 8))
+                history.append({"bull": round(b, 1), "bear": round(100-b, 1)})
+    except:
+        history = [{"bull": 50, "bear": 50}] * 30
+    return jsonify({
+        "fg_index": fg_index, "mood": mood_label, "mood_icon": mood_icon,
+        "bull_pct": bull_pct, "bear_pct": bear_pct, "neutral_pct": neutral_pct,
+        "breakdown": {"bullish": bull_pct, "bearish": bear_pct, "neutral": neutral_pct,
+                      "panic": max(0, bear_pct - 10), "greed": max(0, bull_pct - 55)},
+        "sector_sentiment": sector_sentiment,
+        "signals": signals, "history": history,
+    })
+
+@app.route("/api/portfolio-data")
+@require_auth
+def api_portfolio_data():
+    holdings = [
+        {"ticker": "RELIANCE.NS", "shares": 10, "buy_price": 2400, "sector": "Energy"},
+        {"ticker": "TCS.NS", "shares": 5, "buy_price": 3200, "sector": "IT/Tech"},
+        {"ticker": "HDFCBANK.NS", "shares": 15, "buy_price": 1450, "sector": "Banking"},
+        {"ticker": "INFY.NS", "shares": 12, "buy_price": 1300, "sector": "IT/Tech"},
+        {"ticker": "SBIN.NS", "shares": 20, "buy_price": 520, "sector": "Banking"},
+    ]
+    total_invested = 0
+    total_current = 0
+    sector_alloc = {}
+    stock_data = []
+    for h in holdings:
+        q = _fetch_live_quote(h["ticker"])
+        price = q.get("price") or h["buy_price"]
+        invested = h["shares"] * h["buy_price"]
+        current = h["shares"] * price
+        pl = current - invested
+        pl_pct = round(pl / invested * 100, 2) if invested else 0
+        total_invested += invested
+        total_current += current
+        sector = h["sector"]
+        sector_alloc[sector] = sector_alloc.get(sector, 0) + current
+        score = _compute_risk_score(q)
+        stock_data.append({
+            "ticker": h["ticker"], "shares": h["shares"],
+            "buy_price": h["buy_price"], "current_price": _safe_float(price),
+            "invested": round(invested, 2), "current_value": round(current, 2),
+            "pl": round(pl, 2), "pl_pct": pl_pct,
+            "sector": sector, "risk_score": score,
+        })
+    total_pl = total_current - total_invested
+    total_pl_pct = round(total_pl / total_invested * 100, 2) if total_invested else 0
+    sector_list = [{"name": k, "value": round(v, 2), "pct": round(v / total_current * 100, 1)} for k, v in sector_alloc.items()]
+    avg_risk = round(sum(s["risk_score"] for s in stock_data) / len(stock_data)) if stock_data else 30
+    num_sectors = len(sector_alloc)
+    diversification = min(100, num_sectors * 20)
+    health = min(100, max(0, round((100 - avg_risk) * 0.6 + diversification * 0.4)))
+    projection = []
+    base = total_current
+    for y in range(11):
+        best = round(base * ((1.15) ** y) / 100000, 2)
+        base_c = round(base * ((1.10) ** y) / 100000, 2)
+        bear = round(base * ((1.05) ** y) / 100000, 2)
+        projection.append({"year": 2025 + y, "best": best, "base": base_c, "bear": bear})
+    return jsonify({
+        "total_invested": round(total_invested, 2),
+        "total_current": round(total_current, 2),
+        "total_pl": round(total_pl, 2),
+        "total_pl_pct": total_pl_pct,
+        "health_score": health,
+        "avg_risk": avg_risk,
+        "diversification": diversification,
+        "sector_allocation": sector_list,
+        "stocks": stock_data,
+        "projection": projection,
+        "risk_reward": round((total_pl_pct + 10) / max(avg_risk / 10, 1), 2) if avg_risk else 2.0,
+    })
 
 @app.route("/api/copilot", methods=["POST"])
 def copilot():

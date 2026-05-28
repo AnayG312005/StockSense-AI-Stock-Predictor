@@ -7,6 +7,9 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script async crossorigin="anonymous" data-clerk-publishable-key="{{ clerk_publishable_key }}"
+  src="https://{{ clerk_frontend_api }}/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"
+  type="text/javascript"></script>
 <style>
   :root { --blue-700:#1d4ed8; --blue-600:#2563eb; --blue-500:#3b82f6; --blue-50:#eff6ff; --blue-100:#dbeafe; --slate-800:#1e293b; --slate-600:#475569; --slate-400:#94a3b8; --slate-200:#e2e8f0; }
   *{box-sizing:border-box;margin:0;padding:0;}
@@ -90,9 +93,18 @@
       </button>
       <h1 class="font-bold text-slate-800 text-base">🧠 Market Sentiment Dashboard</h1>
     </div>
-    <span class="badge badge-green text-xs flex items-center gap-1.5">
-      <span class="live-dot w-1.5 h-1.5 rounded-full bg-green-500"></span>Live Analysis
-    </span>
+    <div class="flex items-center gap-3">
+      <span class="badge badge-green text-xs flex items-center gap-1.5">
+        <span class="live-dot w-1.5 h-1.5 rounded-full bg-green-500"></span>Live Analysis
+      </span>
+      <div id="userMenuBtn" class="flex items-center gap-2 cursor-pointer relative">
+        <div id="userAvatar" class="w-8 h-8 rounded-full bg-blue-100 border border-blue-200 flex items-center justify-center text-blue-700 text-xs font-bold">...</div>
+        <div id="userDropdown" class="hidden absolute right-0 top-10 bg-white border border-slate-200 rounded-xl shadow-xl p-2 min-w-40 z-50">
+          <div class="px-3 py-2 text-xs text-slate-400 border-b border-slate-100 mb-1" id="userEmail">Loading...</div>
+          <button onclick="doSignOut()" class="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg font-medium">Sign Out</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="p-4 sm:p-6 max-w-7xl mx-auto">
@@ -237,73 +249,168 @@
 </div>
 
 <script>
-// Reveal + bars
+// ===== CLERK AUTH =====
+function waitForClerk(cb) {
+  if (window.Clerk) { cb(); return; }
+  let tries = 0;
+  const iv = setInterval(() => { tries++; if (window.Clerk) { clearInterval(iv); cb(); } else if (tries > 50) clearInterval(iv); }, 100);
+}
+waitForClerk(async () => {
+  try {
+    await window.Clerk.load();
+    const user = window.Clerk.user;
+    if (!user) { window.location.href = '/login'; return; }
+    const initials = ((user.firstName||'')[0]||(user.emailAddresses?.[0]?.emailAddress||'U')[0]).toUpperCase();
+    document.getElementById('userAvatar').textContent = initials;
+    document.getElementById('userEmail').textContent = user.emailAddresses?.[0]?.emailAddress || user.firstName || 'User';
+    if (user.imageUrl) document.getElementById('userAvatar').innerHTML = `<img src="${user.imageUrl}" class="w-full h-full rounded-full object-cover"/>`;
+  } catch(e) { console.warn('Clerk', e); }
+  loadSentimentData();
+});
+document.getElementById('userMenuBtn').addEventListener('click', () => document.getElementById('userDropdown').classList.toggle('hidden'));
+document.addEventListener('click', e => { if (!e.target.closest('#userMenuBtn')) document.getElementById('userDropdown').classList.add('hidden'); });
+async function doSignOut() { try { await window.Clerk.signOut(); } catch(e){} window.location.href='/login'; }
+
+// ===== REVEAL + BARS =====
 const obs=new IntersectionObserver(e=>e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('visible');}),{threshold:0.1});
 document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
 const bObs=new IntersectionObserver(e=>e.forEach(x=>{if(x.isIntersecting){x.target.querySelectorAll('.prog-bar').forEach(b=>setTimeout(()=>b.style.width=b.dataset.w,200));bObs.unobserve(x.target);}}),{threshold:0.3});
 document.querySelectorAll('.card').forEach(el=>bObs.observe(el));
 
-// Gauge animation
-setTimeout(()=>{
+// ===== REAL-TIME SENTIMENT DATA =====
+let sentChart=null, distChart=null;
+
+async function loadSentimentData() {
+  try {
+    const res = await fetch('/api/sentiment-data');
+    if (!res.ok) { initFallback(); return; }
+    const d = await res.json();
+
+    // Gauge
+    const ring = document.getElementById('gaugeRing');
+    const full = 364.42;
+    const target = d.fg_index || 62;
+    ring.style.strokeDashoffset = full - (target/100)*full;
+    let c=0; const t=setInterval(()=>{c+=1;document.getElementById('fgValue').textContent=Math.min(c,target);if(c>=target)clearInterval(t);},18);
+
+    // FG label
+    const fgLabel = document.querySelector('#fgValue + div');
+    if (fgLabel) fgLabel.textContent = target>60?'GREED':target>40?'NEUTRAL':'FEAR';
+
+    // Mood
+    const moodEls = document.querySelectorAll('.card.p-6.text-center.card-hover');
+    if (moodEls[1]) {
+      const emojiEl = moodEls[1].querySelector('.text-6xl');
+      const moodEl = moodEls[1].querySelector('.text-2xl');
+      const bullEl = moodEls[1].querySelectorAll('.text-lg')[0];
+      const bearEl = moodEls[1].querySelectorAll('.text-lg')[1];
+      if (emojiEl) emojiEl.textContent = d.mood_icon || '😤';
+      if (moodEl) moodEl.textContent = d.mood || 'Bullish';
+      if (bullEl) bullEl.textContent = (d.bull_pct||68) + '%';
+      if (bearEl) bearEl.textContent = (d.bear_pct||32) + '%';
+    }
+
+    // Breakdown bars — update data-w
+    const bk = d.breakdown || {};
+    const bars = document.querySelectorAll('#userMenuBtn').length >= 0 ? document.querySelectorAll('.prog-bar') : [];
+    const barData = [bk.bullish||68, bk.bearish||15, bk.panic||5, bk.greed||8, bk.neutral||4];
+    bars.forEach((b,i) => { if(barData[i]!==undefined){b.dataset.w=barData[i]+'%';b.style.width=barData[i]+'%';} });
+
+    // Trend chart
+    const sCtx = document.getElementById('sentimentChart');
+    if (sCtx) {
+      const hist = d.history || [];
+      const labels = hist.map((_,i)=>{const dt=new Date();dt.setDate(dt.getDate()-(hist.length-1-i));return dt.toLocaleDateString('en',{month:'short',day:'numeric'});});
+      if (sentChart) sentChart.destroy();
+      sentChart = new Chart(sCtx.getContext('2d'), {
+        type:'line',
+        data:{labels, datasets:[
+          {label:'Bullish %',data:hist.map(h=>h.bull),borderColor:'#059669',backgroundColor:'rgba(5,150,105,0.07)',fill:true,tension:0.4,pointRadius:0},
+          {label:'Bearish %',data:hist.map(h=>h.bear),borderColor:'#dc2626',backgroundColor:'rgba(220,38,38,0.05)',fill:true,tension:0.4,pointRadius:0},
+        ]},
+        options:{responsive:true,maintainAspectRatio:false,scales:{x:{ticks:{color:'#94a3b8',font:{size:10},maxTicksLimit:7},grid:{color:'rgba(0,0,0,0.04)'}},y:{ticks:{color:'#94a3b8',font:{size:10}},grid:{color:'rgba(0,0,0,0.04)'},min:0,max:100}},plugins:{legend:{labels:{color:'#475569',font:{size:11}}}}}
+      });
+    }
+
+    // Distribution donut
+    const dCtx = document.getElementById('signalChart');
+    if (dCtx) {
+      const bk2 = d.breakdown || {};
+      if (distChart) distChart.destroy();
+      distChart = new Chart(dCtx.getContext('2d'), {
+        type:'doughnut',
+        data:{labels:['Bullish','Bearish','Neutral','Panic','Greed'],datasets:[{data:[bk2.bullish||68,bk2.bearish||15,bk2.neutral||4,bk2.panic||5,bk2.greed||8],backgroundColor:['#059669','#dc2626','#94a3b8','#ea580c','#2563eb'],borderColor:'white',borderWidth:3}]},
+        options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'right',labels:{color:'#475569',font:{size:11},padding:10}}}}
+      });
+    }
+
+    // Sector heatmap
+    const hm = document.getElementById('heatmap');
+    if (hm && d.sector_sentiment) {
+      hm.innerHTML = '';
+      d.sector_sentiment.forEach(s => {
+        const isGood = s.val >= 55, isBad = s.val < 40;
+        const bg = isGood?'#f0fdf4':isBad?'#fff7ed':'#fffbeb';
+        const border = isGood?'#bbf7d0':isBad?'#fed7aa':'#fde68a';
+        const text = isGood?'#059669':isBad?'#ea580c':'#ca8a04';
+        const mood = isGood?'🐂 Bullish':isBad?'📉 Cautious':'😐 Neutral';
+        const div = document.createElement('div');
+        div.className='heat-cell p-4 text-center';
+        div.style.cssText=`background:${bg};border-color:${border}`;
+        div.innerHTML=`<div class="font-semibold text-slate-800 text-sm mb-1">${s.name}</div><div class="text-2xl font-extrabold mb-0.5" style="color:${text}">${s.val}</div><div class="text-xs text-slate-500">${mood}</div>`;
+        hm.appendChild(div);
+      });
+    }
+
+    // Live signals
+    const feed = document.getElementById('signalFeed');
+    if (feed && d.signals) {
+      feed.innerHTML = '';
+      d.signals.forEach(s => {
+        const up = s.change_pct > 0;
+        const cls = up?'bg-emerald-50 border-emerald-200':'s.change_pct<-0.5'?'bg-red-50 border-red-200':'bg-blue-50 border-blue-200';
+        const badge = up?'badge-green':'badge-red';
+        const icon = up?'📈':'📉';
+        const div = document.createElement('div');
+        div.className=`flex items-center gap-3 p-3 rounded-xl border ${up?'bg-emerald-50 border-emerald-200':Math.abs(s.change_pct||0)>1?'bg-red-50 border-red-200':'bg-blue-50 border-blue-200'}`;
+        div.innerHTML=`<span class="text-xl flex-shrink-0">${icon}</span>
+          <div class="flex-1 min-w-0"><p class="text-sm text-slate-700 font-medium">${s.ticker} — ${s.change_pct!=null?(s.change_pct>0?'+':'')+s.change_pct+'%':''} · ${s.sector} · Price: ${s.price!=null?'₹'+s.price.toLocaleString():'N/A'}</p><span class="text-xs text-slate-400">Live · ${s.direction}</span></div>
+          <span class="badge ${up?'badge-green':'badge-red'} flex-shrink-0">${up?'BUY':'WATCH'}</span>`;
+        feed.appendChild(div);
+      });
+    }
+
+    // Emotion meters
+    updateEmotionMeter('panic', Math.max(0, (d.bear_pct||26)-10));
+    updateEmotionMeter('greed', d.fg_index||62);
+    updateEmotionMeter('bull', d.bull_pct||74);
+    updateEmotionMeter('bear', d.bear_pct||26);
+
+  } catch(e) { console.error('Sentiment data error:', e); initFallback(); }
+}
+
+function updateEmotionMeter(type, val) {
+  const cards = document.querySelectorAll('.card.p-5.text-center.card-hover');
+  const map = {panic:0, greed:1, bull:2, bear:3};
+  const idx = map[type];
+  if (idx === undefined || !cards[idx]) return;
+  const numEl = cards[idx].querySelector('.text-3xl');
+  if (numEl) numEl.textContent = Math.round(val);
+  const barEl = cards[idx].querySelector('.prog-bar');
+  if (barEl) { barEl.dataset.w = val+'%'; barEl.style.width = val+'%'; }
+}
+
+function initFallback() {
+  // Animate with static data as fallback
   const ring=document.getElementById('gaugeRing');
-  const target=62;const full=364.42;
+  const full=364.42; const target=62;
   ring.style.strokeDashoffset=full-(target/100)*full;
   let c=0;const t=setInterval(()=>{c+=1;document.getElementById('fgValue').textContent=Math.min(c,target);if(c>=target)clearInterval(t);},18);
-},500);
+}
 
-// Charts
-const sCtx=document.getElementById('sentimentChart').getContext('2d');
-const days=Array.from({length:30},(_,i)=>{const d=new Date();d.setDate(d.getDate()-(29-i));return d.toLocaleDateString('en',{month:'short',day:'numeric'});});
-const bullData=[45,48,42,50,55,52,58,54,60,57,62,59,65,68,64,70,67,72,69,75,71,74,70,76,73,78,75,80,77,74];
-const bearData=[40,38,42,36,32,35,28,32,26,30,24,28,22,18,22,16,20,14,18,12,16,14,18,12,15,10,13,8,11,15];
-new Chart(sCtx,{type:'line',data:{labels:days,datasets:[
-  {label:'Bullish %',data:bullData,borderColor:'#059669',backgroundColor:'rgba(5,150,105,0.07)',fill:true,tension:0.4,pointRadius:0},
-  {label:'Bearish %',data:bearData,borderColor:'#dc2626',backgroundColor:'rgba(220,38,38,0.05)',fill:true,tension:0.4,pointRadius:0},
-]},options:{responsive:true,maintainAspectRatio:false,scales:{x:{ticks:{color:'#94a3b8',font:{size:10},maxTicksLimit:7},grid:{color:'rgba(0,0,0,0.04)'}},y:{ticks:{color:'#94a3b8',font:{size:10}},grid:{color:'rgba(0,0,0,0.04)'},min:0,max:100}},plugins:{legend:{labels:{color:'#475569',font:{size:11}}}}}});
+// Auto-refresh every 2 minutes
+setInterval(loadSentimentData, 120000);
 
-const dCtx=document.getElementById('signalChart').getContext('2d');
-new Chart(dCtx,{type:'doughnut',data:{labels:['Bullish','Bearish','Neutral','Panic','Greed'],datasets:[{data:[68,15,4,5,8],backgroundColor:['#059669','#dc2626','#94a3b8','#ea580c','#2563eb'],borderColor:'white',borderWidth:3}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'right',labels:{color:'#475569',font:{size:11},padding:10}}}}});
-
-// Heatmap
-const sectors=[
-  {name:'Banking',val:78,bg:'#f0fdf4',border:'#bbf7d0',text:'#059669',mood:'🐂 Bullish'},
-  {name:'IT / Tech',val:65,bg:'#f0fdf4',border:'#86efac',text:'#16a34a',mood:'📈 Positive'},
-  {name:'Energy',val:71,bg:'#f0fdf4',border:'#bbf7d0',text:'#059669',mood:'🐂 Bullish'},
-  {name:'Auto',val:45,bg:'#fffbeb',border:'#fde68a',text:'#d97706',mood:'😐 Neutral'},
-  {name:'FMCG',val:58,bg:'#f0fdf4',border:'#bbf7d0',text:'#15803d',mood:'📈 Positive'},
-  {name:'Pharma',val:38,bg:'#fff7ed',border:'#fed7aa',text:'#ea580c',mood:'📉 Cautious'},
-  {name:'Metals',val:52,bg:'#fffbeb',border:'#fde68a',text:'#ca8a04',mood:'😐 Neutral'},
-  {name:'Realty',val:82,bg:'#eff6ff',border:'#bfdbfe',text:'#1d4ed8',mood:'🚀 Strong'},
-  {name:'Telecom',val:44,bg:'#fff7ed',border:'#fed7aa',text:'#ea580c',mood:'📉 Cautious'},
-  {name:'PSU Banks',val:69,bg:'#f0fdf4',border:'#bbf7d0',text:'#16a34a',mood:'📈 Positive'},
-];
-const hm=document.getElementById('heatmap');
-sectors.forEach(s=>{
-  const d=document.createElement('div');
-  d.className='heat-cell p-4 text-center';
-  d.style.cssText=`background:${s.bg};border-color:${s.border}`;
-  d.innerHTML=`<div class="font-semibold text-slate-800 text-sm mb-1">${s.name}</div><div class="text-2xl font-extrabold mb-0.5" style="color:${s.text}">${s.val}</div><div class="text-xs text-slate-500">${s.mood}</div>`;
-  hm.appendChild(d);
-});
-
-// Signals
-const signals=[
-  {icon:'📈',msg:'RELIANCE.NS breaking above EMA 20/50 — strong bullish structure',time:'2 min ago',badge:'BUY',cls:'bg-emerald-50 border-emerald-200',tbcls:'badge-green'},
-  {icon:'🤖',msg:'AI detected unusual volume spike in HDFCBANK.NS — monitoring',time:'8 min ago',badge:'WATCH',cls:'bg-amber-50 border-amber-200',tbcls:'badge-amber'},
-  {icon:'📉',msg:'TSLA RSI overbought at 74.2 — correction risk elevated',time:'15 min ago',badge:'CAUTION',cls:'bg-red-50 border-red-200',tbcls:'badge-red'},
-  {icon:'🐂',msg:'Market breadth: 68% of NSE 500 stocks above 50-day EMA',time:'22 min ago',badge:'BULLISH',cls:'bg-emerald-50 border-emerald-200',tbcls:'badge-green'},
-  {icon:'📊',msg:'Greed index rose from 54 → 62 over last 5 sessions',time:'35 min ago',badge:'INFO',cls:'bg-blue-50 border-blue-200',tbcls:'badge-blue'},
-  {icon:'🛡',msg:'INFY.NS consolidating near 200-day support — potential reversal zone',time:'48 min ago',badge:'NEUTRAL',cls:'bg-slate-50 border-slate-200',tbcls:'badge-blue'},
-];
-const feed=document.getElementById('signalFeed');
-signals.forEach(s=>{
-  const d=document.createElement('div');
-  d.className=`flex items-center gap-3 p-3 rounded-xl border ${s.cls}`;
-  d.innerHTML=`<span class="text-xl flex-shrink-0">${s.icon}</span>
-    <div class="flex-1 min-w-0"><p class="text-sm text-slate-700 font-medium">${s.msg}</p><span class="text-xs text-slate-400">${s.time}</span></div>
-    <span class="badge ${s.tbcls} flex-shrink-0">${s.badge}</span>`;
-  feed.appendChild(d);
-});
 </script>
 </body>
 </html>
