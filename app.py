@@ -52,29 +52,43 @@ model = None
 # =================================================
 # CLERK AUTH CONFIG
 # =================================================
-CLERK_PUBLISHABLE_KEY = os.getenv("CLERK_PUBLISHABLE_KEY", "")
-CLERK_SECRET_KEY = os.getenv("CLERK_SECRET_KEY", "")
+# Auto-detect correct keys regardless of which env var they were stored in
+def _resolve_clerk_keys():
+    raw_a = os.getenv("CLERK_PUBLISHABLE_KEY", "")
+    raw_b = os.getenv("CLERK_SECRET_KEY", "")
+    pk = ""
+    sk = ""
+    for c in [raw_a, raw_b]:
+        # Handle "KEY_NAME=value" format stored in secret value
+        val = c.split("=", 1)[1] if "=" in c and not c.startswith("pk_") and not c.startswith("sk_") else c
+        if val.startswith("pk_test_") or val.startswith("pk_live_"):
+            pk = val
+        elif val.startswith("sk_test_") or val.startswith("sk_live_"):
+            sk = val
+    return pk, sk
+
+CLERK_PUBLISHABLE_KEY, CLERK_SECRET_KEY = _resolve_clerk_keys()
 
 def _get_clerk_frontend_api():
+    import base64
     pk = CLERK_PUBLISHABLE_KEY
-    if pk.startswith("pk_test_"):
-        domain = pk[len("pk_test_"):]
-        domain = domain.rstrip("$")
-        import base64
-        try:
-            decoded = base64.b64decode(domain + "==").decode("utf-8").rstrip("\x00")
-            return decoded
-        except Exception:
-            pass
-    if pk.startswith("pk_live_"):
-        domain = pk[len("pk_live_"):]
-        domain = domain.rstrip("$")
-        import base64
-        try:
-            decoded = base64.b64decode(domain + "==").decode("utf-8").rstrip("\x00")
-            return decoded
-        except Exception:
-            pass
+    for prefix in ("pk_test_", "pk_live_"):
+        if pk.startswith(prefix):
+            domain = pk[len(prefix):]
+            # Strip trailing $ and any digits after it (padding artifacts)
+            import re
+            domain = re.sub(r'\$\d*$', '', domain)
+            try:
+                # Pad to multiple of 4
+                pad = (4 - len(domain) % 4) % 4
+                decoded = base64.b64decode(domain + "=" * pad).decode("utf-8").strip("\x00").strip()
+                # Clerk appends $<version> to the domain — strip it
+                if "$" in decoded:
+                    decoded = decoded[:decoded.index("$")]
+                if decoded:
+                    return decoded
+            except Exception:
+                pass
     return "clerk.accounts.dev"
 
 CLERK_FRONTEND_API = _get_clerk_frontend_api()
