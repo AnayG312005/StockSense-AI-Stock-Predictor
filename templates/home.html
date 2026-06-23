@@ -6,9 +6,6 @@
 <title>StockSense AI — Institutional-Grade AI Investment Platform</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<script async crossorigin="anonymous" data-clerk-publishable-key="{{ clerk_publishable_key }}"
-  src="https://{{ clerk_frontend_api }}/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"
-  type="text/javascript"></script>
 <style>
   :root {
     --blue-700: #1d4ed8; --blue-600: #2563eb; --blue-500: #3b82f6;
@@ -133,14 +130,6 @@
     <div class="flex items-center gap-3">
       <a href="/prediction" class="btn-outline px-4 py-2 rounded-xl text-sm hidden sm:block">Dashboard</a>
       <a href="/prediction" id="ctaBtn" class="btn-primary px-5 py-2 rounded-xl text-sm">Start Free →</a>
-      <div id="userMenuBtn" class="hidden items-center gap-2 cursor-pointer relative">
-        <div id="userAvatar" class="w-8 h-8 rounded-full bg-blue-100 border border-blue-200 flex items-center justify-center text-blue-700 text-xs font-bold">U</div>
-        <div id="userDropdown" class="hidden absolute right-0 top-10 bg-white border border-slate-200 rounded-xl shadow-xl p-2 min-w-44 z-50">
-          <div class="px-3 py-2 text-xs text-slate-400 border-b border-slate-100 mb-1" id="userEmail">Loading...</div>
-          <a href="/prediction" class="block px-3 py-2 text-sm text-slate-700 hover:bg-blue-50 rounded-lg font-medium">Dashboard</a>
-          <button onclick="doSignOut()" class="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg font-medium">Sign Out</button>
-        </div>
-      </div>
       <button class="md:hidden text-slate-500" onclick="document.getElementById('mobile-menu').classList.toggle('open')">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
       </button>
@@ -474,36 +463,9 @@ function toggleFaq(btn) {
   if(!open){a.classList.add('open');i.classList.add('open');}
 }
 
-// ===== CLERK AUTH STATE =====
-function waitForClerk(cb) {
-  if (window.Clerk) { cb(); return; }
-  let tries = 0;
-  const iv = setInterval(() => { tries++; if (window.Clerk) { clearInterval(iv); cb(); } else if (tries > 50) clearInterval(iv); }, 100);
-}
-waitForClerk(async () => {
-  try {
-    await window.Clerk.load();
-    const user = window.Clerk.user;
-    if (user) {
-      const initials = ((user.firstName||'')[0]||(user.emailAddresses?.[0]?.emailAddress||'U')[0]).toUpperCase();
-      const menuBtn = document.getElementById('userMenuBtn');
-      const avatar = document.getElementById('userAvatar');
-      const emailEl = document.getElementById('userEmail');
-      menuBtn.classList.remove('hidden');
-      menuBtn.classList.add('flex');
-      avatar.textContent = initials;
-      if (emailEl) emailEl.textContent = user.emailAddresses?.[0]?.emailAddress || user.firstName || 'User';
-      if (user.imageUrl) avatar.innerHTML = `<img src="${user.imageUrl}" class="w-full h-full rounded-full object-cover"/>`;
-      document.getElementById('ctaBtn').textContent = 'Dashboard →';
-    }
-  } catch(e) { console.warn('Clerk:', e.message); }
-  loadLiveTicker();
-});
-document.getElementById('userMenuBtn').addEventListener('click', () => document.getElementById('userDropdown').classList.toggle('hidden'));
-document.addEventListener('click', e => { if (!e.target.closest('#userMenuBtn')) document.getElementById('userDropdown').classList.add('hidden'); });
-async function doSignOut() { try { await window.Clerk.signOut(); } catch(e){} window.location.reload(); }
-
 // ===== LIVE TICKER =====
+loadLiveTicker();
+
 async function loadLiveTicker() {
   try {
     const res = await fetch('/api/live-ticker');

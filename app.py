@@ -26,12 +26,6 @@ from openai import OpenAI
 from tensorflow.keras.layers import InputLayer
 from dotenv import load_dotenv
 
-try:
-    import jwt
-    JWT_AVAILABLE = True
-except ImportError:
-    JWT_AVAILABLE = False
-
 # =================================================
 # BASIC APP SETUP
 # =================================================
@@ -49,124 +43,9 @@ app.secret_key = os.getenv("SESSION_SECRET", os.urandom(24))
 
 model = None
 
-# =================================================
-# CLERK AUTH CONFIG
-# =================================================
-# Auto-detect correct keys regardless of which env var they were stored in
-def _resolve_clerk_keys():
-    raw_a = os.getenv("CLERK_PUBLISHABLE_KEY", "")
-    raw_b = os.getenv("CLERK_SECRET_KEY", "")
-    pk = ""
-    sk = ""
-    for c in [raw_a, raw_b]:
-        # Handle "KEY_NAME=value" format stored in secret value
-        val = c.split("=", 1)[1] if "=" in c and not c.startswith("pk_") and not c.startswith("sk_") else c
-        if val.startswith("pk_test_") or val.startswith("pk_live_"):
-            pk = val
-        elif val.startswith("sk_test_") or val.startswith("sk_live_"):
-            sk = val
-    return pk, sk
-
-CLERK_PUBLISHABLE_KEY, CLERK_SECRET_KEY = _resolve_clerk_keys()
-
-def _sanitize_clerk_pk(pk: str) -> str:
-    """Re-encode the publishable key so the base64 payload is exactly '<domain>$'.
-    Clerk JS validates that the decoded payload ends with exactly '$', not '$6' etc."""
-    import base64 as _b64, re as _re
-    for prefix in ("pk_test_", "pk_live_"):
-        if pk.startswith(prefix):
-            raw = pk[len(prefix):]
-            try:
-                pad = (4 - len(raw) % 4) % 4
-                decoded = _b64.b64decode(raw + "=" * pad).decode("utf-8").strip()
-                # Strip trailing $<digits> suffix
-                domain = _re.sub(r'\$\d*$', '', decoded).rstrip("$")
-                if not domain:
-                    return pk
-                clean_payload = (domain + "$").encode("utf-8")
-                clean_b64 = _b64.b64encode(clean_payload).decode("utf-8").rstrip("=")
-                return prefix + clean_b64
-            except Exception:
-                pass
-    return pk
-
-CLERK_PUBLISHABLE_KEY = _sanitize_clerk_pk(CLERK_PUBLISHABLE_KEY)
-
-def _get_clerk_frontend_api():
-    import base64
-    pk = CLERK_PUBLISHABLE_KEY
-    for prefix in ("pk_test_", "pk_live_"):
-        if pk.startswith(prefix):
-            domain = pk[len(prefix):]
-            # Strip trailing $ and any digits after it (padding artifacts)
-            import re
-            domain = re.sub(r'\$\d*$', '', domain)
-            try:
-                # Pad to multiple of 4
-                pad = (4 - len(domain) % 4) % 4
-                decoded = base64.b64decode(domain + "=" * pad).decode("utf-8").strip("\x00").strip()
-                # Clerk appends $<version> to the domain — strip it
-                if "$" in decoded:
-                    decoded = decoded[:decoded.index("$")]
-                if decoded:
-                    return decoded
-            except Exception:
-                pass
-    return "clerk.accounts.dev"
-
-CLERK_FRONTEND_API = _get_clerk_frontend_api()
-
-_clerk_jwks_cache = {"keys": None, "fetched_at": 0}
-
-def _get_clerk_jwks():
-    now = time.time()
-    if _clerk_jwks_cache["keys"] and now - _clerk_jwks_cache["fetched_at"] < 3600:
-        return _clerk_jwks_cache["keys"]
-    try:
-        url = f"https://{CLERK_FRONTEND_API}/.well-known/jwks.json"
-        resp = requests.get(url, timeout=5)
-        if resp.status_code == 200:
-            _clerk_jwks_cache["keys"] = resp.json().get("keys", [])
-            _clerk_jwks_cache["fetched_at"] = now
-            return _clerk_jwks_cache["keys"]
-    except Exception as e:
-        print(f"JWKS fetch error: {e}")
-    return []
-
-def _verify_clerk_token(token):
-    if not token or not JWT_AVAILABLE:
-        return None
-    try:
-        from jwt.algorithms import RSAAlgorithm
-        keys = _get_clerk_jwks()
-        header = jwt.get_unverified_header(token)
-        kid = header.get("kid")
-        matching = next((k for k in keys if k.get("kid") == kid), None) if kid else (keys[0] if keys else None)
-        if not matching:
-            return None
-        public_key = RSAAlgorithm.from_jwk(json.dumps(matching))
-        payload = jwt.decode(token, public_key, algorithms=["RS256"], options={"verify_exp": True})
-        return payload
-    except Exception as e:
-        print(f"Token verification error: {e}")
-        return None
-
-def get_current_user():
-    token = request.cookies.get("__session") or request.headers.get("Authorization", "").replace("Bearer ", "")
-    if token:
-        return _verify_clerk_token(token)
-    return None
-
-CLERK_CONFIGURED = bool(CLERK_PUBLISHABLE_KEY and CLERK_FRONTEND_API != "clerk.accounts.dev")
-
 def require_auth(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        if not CLERK_CONFIGURED:
-            return f(*args, **kwargs)
-        user = get_current_user()
-        if not user:
-            return redirect(url_for("login_page"))
         return f(*args, **kwargs)
     return decorated
 
@@ -803,18 +682,11 @@ def process_prediction(stock_input, template="prediction.html"):
 # =================================================
 # ROUTES
 # =================================================
-def _clerk_ctx():
-    return {
-        "clerk_publishable_key": CLERK_PUBLISHABLE_KEY,
-        "clerk_frontend_api": CLERK_FRONTEND_API,
-        "clerk_configured": CLERK_CONFIGURED,
-    }
-
 @app.route("/", methods=["GET", "POST"])
 def home():
     if request.method == "POST":
         return process_prediction(request.form.get("stock"))
-    return render_template("home.html", **_clerk_ctx())
+    return render_template("home.html")
 
 @app.route("/prediction", methods=["GET", "POST"])
 @require_auth
@@ -832,7 +704,6 @@ def prediction():
         plot_path_ema_20_50=None,
         plot_path_ema_100_200=None,
         plot_path_prediction=None,
-        **_clerk_ctx()
     )
 
 @app.route("/download/<filename>")
@@ -842,33 +713,20 @@ def download_file(filename):
         return send_file(path, as_attachment=True)
     return "File not found", 404
 
-@app.route("/login")
-def login_page():
-    user = get_current_user()
-    if user:
-        return redirect(url_for("home"))
-    return render_template("login.html", **_clerk_ctx())
-
-@app.route("/sso-callback")
-def sso_callback():
-    return render_template("sso_callback.html",
-        clerk_publishable_key=CLERK_PUBLISHABLE_KEY,
-        clerk_frontend_api=CLERK_FRONTEND_API)
-
 @app.route("/sentiment")
 @require_auth
 def sentiment():
-    return render_template("sentiment.html", **_clerk_ctx())
+    return render_template("sentiment.html")
 
 @app.route("/risk")
 @require_auth
 def risk():
-    return render_template("risk.html", **_clerk_ctx())
+    return render_template("risk.html")
 
 @app.route("/portfolio")
 @require_auth
 def portfolio():
-    return render_template("portfolio.html", **_clerk_ctx())
+    return render_template("portfolio.html")
 
 # =================================================
 # REAL-TIME DATA APIs
