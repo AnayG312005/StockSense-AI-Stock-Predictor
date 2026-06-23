@@ -268,15 +268,14 @@ waitForClerk(async () => {
   try {
     await window.Clerk.load();
     const user = window.Clerk.user;
-    if (!user) { window.location.href = '/login'; return; }
-    const initials = ((user.firstName||'')[0]||(user.emailAddresses?.[0]?.emailAddress||'U')[0]).toUpperCase();
-    document.getElementById('userAvatar').textContent = initials;
-    document.getElementById('userAvatar').title = user.firstName || user.emailAddresses?.[0]?.emailAddress;
-    document.getElementById('userEmail').textContent = user.emailAddresses?.[0]?.emailAddress || user.firstName || 'User';
-    if (user.imageUrl) {
-      document.getElementById('userAvatar').innerHTML = `<img src="${user.imageUrl}" class="w-full h-full rounded-full object-cover"/>`;
+    if (user) {
+      const initials = ((user.firstName||'')[0]||(user.emailAddresses?.[0]?.emailAddress||'U')[0]).toUpperCase();
+      document.getElementById('userAvatar').textContent = initials;
+      document.getElementById('userAvatar').title = user.firstName || user.emailAddresses?.[0]?.emailAddress;
+      document.getElementById('userEmail').textContent = user.emailAddresses?.[0]?.emailAddress || user.firstName || 'User';
+      if (user.imageUrl) document.getElementById('userAvatar').innerHTML = `<img src="${user.imageUrl}" class="w-full h-full rounded-full object-cover"/>`;
     }
-  } catch(e) { console.warn('Clerk auth check failed', e); }
+  } catch(e) { console.warn('Clerk:', e.message); }
   loadRiskData();
 });
 document.getElementById('userMenuBtn').addEventListener('click', () => {

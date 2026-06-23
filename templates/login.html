@@ -5,10 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>StockSense AI — Sign In</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<script>window.__clerk_frontend_api = "{{ clerk_publishable_key }}";</script>
+{% if clerk_configured %}
 <script async crossorigin="anonymous" data-clerk-publishable-key="{{ clerk_publishable_key }}"
   src="https://{{ clerk_frontend_api }}/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"
   type="text/javascript"></script>
+{% endif %}
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   *{box-sizing:border-box;margin:0;padding:0;}
@@ -125,12 +126,31 @@
 let clerkInstance = null;
 let signInAttempt = null;
 let signUpAttempt = null;
+const CLERK_ENABLED = {{ 'true' if clerk_configured else 'false' }};
 
-window.addEventListener('load', async () => {
-  await window.Clerk.load();
-  clerkInstance = window.Clerk;
-  if (clerkInstance.user) {
-    window.location.href = '/';
+if (!CLERK_ENABLED) {
+  // Clerk not configured — bypass auth, go straight to app
+  window.location.href = '/';
+}
+
+function waitForClerk(cb) {
+  if (window.Clerk) { cb(); return; }
+  let tries = 0;
+  const iv = setInterval(() => {
+    tries++;
+    if (window.Clerk) { clearInterval(iv); cb(); }
+    else if (tries > 60) { clearInterval(iv); console.warn('Clerk did not load'); }
+  }, 100);
+}
+
+waitForClerk(async () => {
+  try {
+    await window.Clerk.load();
+    clerkInstance = window.Clerk;
+    if (clerkInstance.user) { window.location.href = '/'; }
+  } catch(e) {
+    console.warn('Clerk load failed:', e);
+    showError('Authentication service unavailable. Please try again later.');
   }
 });
 

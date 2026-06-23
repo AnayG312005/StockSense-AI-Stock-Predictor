@@ -496,7 +496,7 @@ waitForClerk(async () => {
       if (user.imageUrl) avatar.innerHTML = `<img src="${user.imageUrl}" class="w-full h-full rounded-full object-cover"/>`;
       document.getElementById('ctaBtn').textContent = 'Dashboard →';
     }
-  } catch(e) { console.warn('Clerk', e); }
+  } catch(e) { console.warn('Clerk:', e.message); }
   loadLiveTicker();
 });
 document.getElementById('userMenuBtn').addEventListener('click', () => document.getElementById('userDropdown').classList.toggle('hidden'));

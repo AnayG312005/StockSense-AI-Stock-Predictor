@@ -69,6 +69,29 @@ def _resolve_clerk_keys():
 
 CLERK_PUBLISHABLE_KEY, CLERK_SECRET_KEY = _resolve_clerk_keys()
 
+def _sanitize_clerk_pk(pk: str) -> str:
+    """Re-encode the publishable key so the base64 payload is exactly '<domain>$'.
+    Clerk JS validates that the decoded payload ends with exactly '$', not '$6' etc."""
+    import base64 as _b64, re as _re
+    for prefix in ("pk_test_", "pk_live_"):
+        if pk.startswith(prefix):
+            raw = pk[len(prefix):]
+            try:
+                pad = (4 - len(raw) % 4) % 4
+                decoded = _b64.b64decode(raw + "=" * pad).decode("utf-8").strip()
+                # Strip trailing $<digits> suffix
+                domain = _re.sub(r'\$\d*$', '', decoded).rstrip("$")
+                if not domain:
+                    return pk
+                clean_payload = (domain + "$").encode("utf-8")
+                clean_b64 = _b64.b64encode(clean_payload).decode("utf-8").rstrip("=")
+                return prefix + clean_b64
+            except Exception:
+                pass
+    return pk
+
+CLERK_PUBLISHABLE_KEY = _sanitize_clerk_pk(CLERK_PUBLISHABLE_KEY)
+
 def _get_clerk_frontend_api():
     import base64
     pk = CLERK_PUBLISHABLE_KEY
@@ -134,9 +157,13 @@ def get_current_user():
         return _verify_clerk_token(token)
     return None
 
+CLERK_CONFIGURED = bool(CLERK_PUBLISHABLE_KEY and CLERK_FRONTEND_API != "clerk.accounts.dev")
+
 def require_auth(f):
     @wraps(f)
     def decorated(*args, **kwargs):
+        if not CLERK_CONFIGURED:
+            return f(*args, **kwargs)
         user = get_current_user()
         if not user:
             return redirect(url_for("login_page"))
@@ -780,6 +807,7 @@ def _clerk_ctx():
     return {
         "clerk_publishable_key": CLERK_PUBLISHABLE_KEY,
         "clerk_frontend_api": CLERK_FRONTEND_API,
+        "clerk_configured": CLERK_CONFIGURED,
     }
 
 @app.route("/", methods=["GET", "POST"])
@@ -819,9 +847,7 @@ def login_page():
     user = get_current_user()
     if user:
         return redirect(url_for("home"))
-    return render_template("login.html",
-        clerk_publishable_key=CLERK_PUBLISHABLE_KEY,
-        clerk_frontend_api=CLERK_FRONTEND_API)
+    return render_template("login.html", **_clerk_ctx())
 
 @app.route("/sso-callback")
 def sso_callback():

@@ -285,12 +285,13 @@ waitForClerk(async () => {
   try {
     await window.Clerk.load();
     const user = window.Clerk.user;
-    if (!user) { window.location.href = '/login'; return; }
-    const initials = ((user.firstName||'')[0]||(user.emailAddresses?.[0]?.emailAddress||'U')[0]).toUpperCase();
-    document.getElementById('userAvatar').textContent = initials;
-    document.getElementById('userEmail').textContent = user.emailAddresses?.[0]?.emailAddress || user.firstName || 'User';
-    if (user.imageUrl) document.getElementById('userAvatar').innerHTML = `<img src="${user.imageUrl}" class="w-full h-full rounded-full object-cover"/>`;
-  } catch(e) { console.warn('Clerk', e); }
+    if (user) {
+      const initials = ((user.firstName||'')[0]||(user.emailAddresses?.[0]?.emailAddress||'U')[0]).toUpperCase();
+      document.getElementById('userAvatar').textContent = initials;
+      document.getElementById('userEmail').textContent = user.emailAddresses?.[0]?.emailAddress || user.firstName || 'User';
+      if (user.imageUrl) document.getElementById('userAvatar').innerHTML = `<img src="${user.imageUrl}" class="w-full h-full rounded-full object-cover"/>`;
+    }
+  } catch(e) { console.warn('Clerk:', e.message); }
   loadPortfolioData();
 });
 document.getElementById('userMenuBtn').addEventListener('click', () => document.getElementById('userDropdown').classList.toggle('hidden'));
